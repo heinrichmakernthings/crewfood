@@ -118,7 +118,7 @@ function mealsLabel2(g) {
 export function renderInternal(state, c, h) {
   const {esc, fmt, whole, today} = h;
   const t = state.settings, tot = c.cost;
-  const pct = v => (tot && Number.isFinite(v) ? Math.round(v / tot * 100) + '%' : '—');
+  const pct = v => (tot && Number.isFinite(v) ? Math.round(v / tot * 100) + '%' : 'n/a');
   const costs = [['Ingredients (whole packs)', c.purchased], ['Catering team (incl. on-costs)', c.labour], ['Consumables', c.consumables], ['Overheads', c.fixed], ['Daily fuel & cleaning', c.daily], [`Contingency (${t.contingency}%)`, c.contingency]];
   const top = c.shopping.filter(i => i.packs > 0).sort((a, b) => b.spend - a.spend).slice(0, 8);
   return `<article class="report-sheet" id="report-sheet" aria-label="Internal costing">

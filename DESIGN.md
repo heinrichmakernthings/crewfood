@@ -124,7 +124,7 @@ Amber shopping inputs identify editable pack quantities, prices, and yields. War
 
 Arial with Helvetica and sans-serif fallbacks provides the operational text. Georgia adds modest emphasis to the editable event name and quote heading. Event names reduce to 28px at the 1050px breakpoint. Table headings are uppercase and letter-spaced; general form labels remain sentence case.
 
-Tables use the table role, with shopping rows at 13px. Supporting notes are 11–13px. Paragraphs use a 1.55 line height; notes use 1.5. Number inputs, monetary outputs, and numeric table cells use tabular numerals. Numeric table columns align right.
+Tables use the table role, with shopping rows at 13px. Supporting notes are 11 to 13px. Paragraphs use a 1.55 line height; notes use 1.5. Number inputs, monetary outputs, and numeric table cells use tabular numerals. Numeric table columns align right.
 
 ## Layout
 

@@ -1,4 +1,4 @@
-# Crew Table — Claude handover
+# Crew Table: Claude handover
 
 Festival catering calculator, including the latest dashboard redesign.
 
