@@ -78,3 +78,6 @@ Each option (hot drinks, fruit, cereal station, big salads) has a master tick (s
 
 ## Hot drinks (plan version 4)
 Hot drinks are a simple count: `settings.drinks` is drinks per person per day (default 5) and `settings.cups` is the disposable cup cost per drink. The Hot drinks recipe is costed per cup (instant coffee, tea bags, milk, oat drink, sugar; about 60% coffee). Version 3 plans upgrade automatically (the old allowance of 1 becomes 5 drinks), so prices do not change.
+
+## Team earnings
+The Days & crew tab has a second view, Team earnings. It shows what the catering staff make from the event: pay per person and role total (before on-costs), employer on-costs, total team cost (equal to the labour in the quote), share of the quote, a split by role and a table by stage. Roles with the same name are merged across stages. Pay each is for one person present every day their role is on site. It is calculated in `model.mjs` (`team`) and shown by `team.mjs`.

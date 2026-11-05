@@ -25,6 +25,13 @@ export function calculate(s,mode='mixed'){
   }
   phaseCosts.push({name:p.name,days:p.days,people:sum(p.groups.map(g=>g.people)),pd:phasePD,labour:staff});
  }
+
+ const roleMap=new Map();
+ s.phases.forEach(p=>p.staff.forEach(r=>{if(!(r.people>0)||!(p.days>0))return;const e=roleMap.get(r.name)||{name:r.name,people:0,days:0,hours:0,perPerson:0,total:0,personDays:0,rateMin:Infinity,rateMax:0};
+  e.people=Math.max(e.people,r.people);e.days+=p.days;e.hours+=r.hours*p.days;e.perPerson+=r.hours*r.rate*p.days;e.total+=r.people*r.hours*r.rate*p.days;e.personDays+=r.people*p.days;e.rateMin=Math.min(e.rateMin,r.rate);e.rateMax=Math.max(e.rateMax,r.rate);roleMap.set(r.name,e);}));
+ const teamStages=s.phases.map(p=>{const gross=sum(p.staff.map(r=>r.people*r.hours*r.rate))*p.days;return {name:p.name,days:p.days,people:sum(p.staff.map(r=>r.people)),gross,oncost:gross*t.oncost/100,total:gross*(1+t.oncost/100)};});
+ const teamGross=sum(teamStages.map(x=>x.gross));
+ const team={roles:[...roleMap.values()],stages:teamStages,gross:teamGross,oncost:teamGross*t.oncost/100,total:teamGross*(1+t.oncost/100),paidHours:sum(s.phases.map(p=>sum(p.staff.map(r=>r.people*r.hours))*p.days))};
  const quantities=new Map(s.ingredients.map(i=>[i.id,0]));
  s.recipes.forEach((r,ri)=>r.lines.forEach(l=>quantities.set(l.ingredient,quantities.get(l.ingredient)+l.qty*servings[ri]*waste)));
  const shopping=s.ingredients.map(i=>{const needed=quantities.get(i.id),packs=Math.ceil(Math.max(0,needed/(i.pack*i.yield)-1e-10));return {...i,needed,packs,spend:packs*i.price,spare:packs*i.pack*i.yield-needed};});
@@ -45,6 +52,6 @@ export function calculate(s,mode='mixed'){
  phaseCosts=phaseCosts.map((p,pi)=>({...p,cost:sum(groups.filter(g=>g.pi===pi).map(g=>g.cost)),price:sum(groups.filter(g=>g.pi===pi).map(g=>g.price))}));
  const unallocated=price-kitFee-sum(groups.map(g=>g.price));
  s.recipes.forEach((r,i)=>{if(servings[i]>0&&!r.lines.some(l=>l.qty>0))errors.push(r.name+' has portions but no ingredients. Add ingredient quantities or set its menu weight / daily allowance to zero.');});
- if(errors.length)return {energyCharge:NaN,kitFee,kit,energy,energyTotals,recipeEnergy,recipeCosts,servings,groups:groups.map(g=>({...g,cost:NaN,price:NaN})),phaseCosts:phaseCosts.map(p=>({...p,cost:NaN,price:NaN})),pd,meals,food:NaN,purchased:NaN,uplift:NaN,labour,consumables,fixed,daily,base:NaN,contingency:NaN,cost:NaN,price:NaN,profit:NaN,shopping,unallocated:NaN,errors};
- return {energyCharge,kitFee,kit,energy,energyTotals,recipeEnergy,recipeCosts,servings,groups,phaseCosts,pd,meals,food,purchased,uplift,labour,consumables,fixed,daily,base,contingency,cost,price,profit,shopping,unallocated,errors};
+ if(errors.length)return {team,energyCharge:NaN,kitFee,kit,energy,energyTotals,recipeEnergy,recipeCosts,servings,groups:groups.map(g=>({...g,cost:NaN,price:NaN})),phaseCosts:phaseCosts.map(p=>({...p,cost:NaN,price:NaN})),pd,meals,food:NaN,purchased:NaN,uplift:NaN,labour,consumables,fixed,daily,base:NaN,contingency:NaN,cost:NaN,price:NaN,profit:NaN,shopping,unallocated:NaN,errors};
+ return {team,energyCharge,kitFee,kit,energy,energyTotals,recipeEnergy,recipeCosts,servings,groups,phaseCosts,pd,meals,food,purchased,uplift,labour,consumables,fixed,daily,base,contingency,cost,price,profit,shopping,unallocated,errors};
 }

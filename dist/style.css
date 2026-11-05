@@ -140,3 +140,17 @@
 .chip input:focus-visible+span{outline:3px solid #e8aa56;outline-offset:2px}
 .qty{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted)}.qty input{width:84px;font-size:16px}
 .opt.rich .opt-price{border-top:1px dashed var(--line);padding-top:10px;margin-top:auto}
+
+/* Team earnings */
+.team-kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:18px}
+.team-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;margin:0 0 14px}
+.card+.card{margin-top:0}.card h3{font-size:17px;margin:0}.card .note{margin:4px 0 12px}
+.team-kpis .kpi strong{font-size:24px}.team-kpis .kpi.main strong{font-size:28px}
+section.card{margin-bottom:14px}
+@media(max-width:1280px){.team-kpis{grid-template-columns:1fr 1fr}.team-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.team-kpis{grid-template-columns:1fr}}
+
+.team-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:start}.team-grid>*,.card{min-width:0}
+@media(max-width:1280px){.team-grid{grid-template-columns:minmax(0,1fr)}}
+.team-grid{grid-template-columns:minmax(0,1fr)}
+@media(min-width:1750px){.team-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}}

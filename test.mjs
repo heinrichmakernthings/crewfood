@@ -125,3 +125,20 @@ const v3b=structuredClone(v3);v3b.settings.drinks=2;const mb=migrate(v3b);assert
 const v2=structuredClone(v3);v2.version=2;delete v2.equipment;['gas','electric','serviceHours','load'].forEach(k=>delete v2.settings[k]);v2.recipes.forEach(r=>delete r.equipment);const m2=migrate(v2);validate(m2);assert.equal(m2.settings.drinks,5);
 }
 console.log('hot drinks tests passed');
+// Team earnings
+{const st=structuredClone(DEFAULT),c=calculate(st),t=c.team,role=n=>t.roles.find(r=>r.name===n);
+assert.ok(Math.abs(t.total-c.labour)<1e-9,'team cost equals the labour in the quote');
+assert.ok(Math.abs(t.gross*(1+st.settings.oncost/100)-t.total)<1e-9);assert.ok(Math.abs(t.oncost-(t.total-t.gross))<1e-9);
+assert.equal(t.gross,7850);assert.equal(role('Lead cook').perPerson,10*17*17,'lead cook: 10h x 17 x 17 days');
+assert.equal(role('Cook').perPerson,8*17*17);assert.equal(role('Cook').total,17*8*20,'cooks: 1 in build, 2 in live, 1 in break');assert.equal(role('Cook').people,2);
+assert.equal(role('Kitchen assistant').perPerson,8*14*17,'assistant is on 14 an hour');
+assert.ok(Math.abs(t.roles.reduce((a,r)=>a+r.total,0)-t.gross)<1e-9,'roles add up to the total');
+assert.ok(Math.abs(t.stages.reduce((a,x)=>a+x.total,0)-t.total)<1e-9,'stages add up to the total');
+assert.equal(t.paidHours,sum(st.phases.map(p=>sum(p.staff.map(r=>r.people*r.hours))*p.days)));
+const rise=structuredClone(st);rise.phases.forEach(p=>p.staff.forEach(r=>{if(r.name==='Cook')r.rate=20}));assert.ok(calculate(rise).team.gross>t.gross);assert.equal(calculate(rise).team.roles.find(r=>r.name==='Cook').perPerson,8*20*17);
+const mixed=structuredClone(st);mixed.phases[1].staff.find(r=>r.name==='Cook').rate=19;const mr=calculate(mixed).team.roles.find(r=>r.name==='Cook');assert.equal(mr.rateMin,17);assert.equal(mr.rateMax,19,'rate range when it differs by stage');
+const none=structuredClone(st);none.phases.forEach(p=>p.days=0);assert.equal(calculate(none).team.gross,0);assert.equal(calculate(none).team.roles.length,0);
+const bad=structuredClone(st);bad.recipes.slice(0,4).forEach(r=>r.weight=0);assert.equal(calculate(bad).team.gross,7850,'team pay still shows when the menu has a warning');
+import('./dist/team.mjs').then(({renderTeam})=>{const h={esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n))};const html=renderTeam(st,c,h);assert.ok(html.includes('Lead cook')&&html.includes('£2890.00')&&html.includes('Total team cost'));assert.ok(renderTeam(none,calculate(none),h).includes('No staff set up yet'));console.log('team view tests passed');});
+}
+console.log('team tests passed');
