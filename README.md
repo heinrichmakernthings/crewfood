@@ -38,7 +38,7 @@ Latest change: dashboard opens with quote/cost/profit, all three phases with edi
 
 ## Calculation rules and baseline
 - Default: 1,150 person-days and 3,450 meals.
-- Default total cost: £21,061.86; selling price: £28,082.47; profit: £7,020.62 (chef wage £17/h, all four extras ticked, gas and electric charged into the cost, no equipment fee).
+- Default total cost: £20,437.11; selling price: £27,249.47; profit: £6,812.37 (chef wage £17/h, all four extras ticked, gas and electric charged into the cost, no equipment fee).
 - Margin is profit / selling price: price = cost / (1 - margin / 100), not markup.
 - Ingredients use raw net quantities with usable-yield adjustment and food buffer once.
 - Purchase packs round up over the whole event; excess stock is charged to this event.
@@ -67,7 +67,7 @@ Calculation tests passed on the packaged source. Dashboard navigation and a day-
 - Energy per kit = days x units x hours per service x services x kW x burner load. Services per day: breakfast 1, lunch and dinner 2, extras 1 (all day). Units to hire = busiest service / (portions per hour x service window).
 - The kit is owned, so the Equipment tab is a kit list (what to bring), not a hire list.
 - Per client, two tick boxes (state.kit): **Charge gas & electric** adds the estimated energy to our cost, so it carries contingency and margin; **Equipment fee** adds a separate client charge (per day on site or whole event) after margin, shown as its own line on the client quote. The fee counts as profit, not cost. Gas and electric costs never appear on the client quote.
-- The daily allowance in Costs & margin is now "Cleaning & other" (default £50/day). Fuel comes from the Equipment tab, so lower the allowance if you think cleaning costs less.
+- The daily allowance in Costs & margin is now "Cleaning & other" (default £15/day for supplies). Fuel comes from the Equipment tab.
 - Gas £0.10 and electricity £0.30 per kWh, and the kW and throughput figures, are estimates. Replace them with your supplier and hire company numbers.
 
 ## Installable app

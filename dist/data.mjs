@@ -1828,7 +1828,7 @@ export const DEFAULT = {
     "drinks": 1,
     "disposables": 0.18,
     "cups": 0.25,
-    "daily": 50,
+    "daily": 15,
     "cereal": 0.5,
     "gas": 0.1,
     "electric": 0.3,
