@@ -1,30 +1,37 @@
-# Deploying Crew Table on Cloudflare
+# Deploying Crew Table on Cloudflare (private repo, password protected)
 
-Crew Table is plain static files in `dist/`. There is no backend, database or secret. Plans are saved in each person's browser.
+Crew Table is static files in `dist/`, served by a small Worker (`src/worker.js`) that asks for a password first. There is no database or backend. Plans are saved in each person's browser.
 
-## 1. Connect the repo (about 3 minutes)
-1. Cloudflare dashboard > **Workers & Pages** > **Create** > **Import a repository**, and pick this repo.
-2. Project name `crew-table`. Build command: leave empty. Deploy command: `npx wrangler deploy`.
-3. Save and deploy. Every push to `main` redeploys.
+## 1. Make the GitHub repo private
+GitHub > this repo > **Settings** > **General** > **Danger Zone** > **Change visibility** > **Make private**.
 
-You get a `https://crew-table.<your-subdomain>.workers.dev` address.
+## 2. Connect it to Cloudflare
+1. Cloudflare dashboard > **Workers & Pages** > **Create** > **Import a repository**.
+2. When asked, let the Cloudflare GitHub app see this repo (choose "Only select repositories" and tick it). This is what lets a private repo deploy.
+3. Project name `crew-table`. Build command: leave empty. Deploy command: `npx wrangler deploy`.
+4. Deploy. Every push to `main` redeploys.
 
-## 2. Add a login (do this before sharing the link)
-The app shows your costs, profit margin and wages, so keep it private.
-1. Cloudflare **Zero Trust** > **Access** > **Applications** > **Add an application** > **Self-hosted**.
-2. Point it at the `workers.dev` address (or your own domain).
-3. Add a policy: **Allow**, **Emails** is your email and anyone on your team.
-4. Test in a private browser window. It should ask for a one-time code by email.
+## 3. Set the password (required)
+The site refuses everyone until a password is set.
+1. Workers & Pages > **crew-table** > **Settings** > **Variables and Secrets** > **Add**.
+2. Type **Secret**, name `SITE_PASSWORD`, value your password. Use a long phrase, for example four random words. Save and deploy.
+3. Optional: add another secret `SITE_USER` to also require a specific username. If you leave it out, any username works and only the password matters.
+4. Open the site in a private window. Your browser shows a sign-in box. Enter the password.
 
-Until this is on, anyone with the link can open the app and read the default prices and margins in it.
+Secrets stay put when you redeploy. To change the password, edit the secret and deploy.
 
-## 3. Day to day
-- Open the app on any device. Plans are per browser, so use **Plan files > Download backup** to move a plan between devices.
-- For clients, open **Reports > Client quote** and print to PDF. Clients never need the link.
+Notes:
+- Everyone shares one password. To cut someone off, change it and tell the others.
+- Browsers remember the password until they are closed. There is no log out button.
+- Nothing limits repeated guesses, so keep the password long. For named logins and an audit trail, use **Cloudflare Zero Trust > Access** instead: Add application > Self-hosted > Allow listed emails. It needs no code changes (delete `main` and `run_worker_first` from `wrangler.jsonc` if you move to Access).
+
+## 4. Day to day
+- Plans are per browser. Use **Plan files > Download backup** to move a plan between devices.
+- For clients, open **Reports > Client quote** and print to PDF. Clients never need access to the app.
 - Before quoting, replace every ingredient marked "Estimate: check price" and the gas, electricity and equipment numbers on the Equipment tab.
 
 ## Local run and tests
 ```sh
-npm run dev     # http://localhost:8000
+npm run dev     # http://localhost:8000 (no password locally)
 npm test
 ```

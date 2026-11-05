@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Festival crew catering calculator and client quotes",
   "scripts": {
-    "test": "node test.mjs && node --check dist/app.mjs",
+    "test": "node test.mjs && node test-worker.mjs && node --check dist/app.mjs",
     "dev": "python3 -m http.server 8000 --directory dist"
   }
 }
