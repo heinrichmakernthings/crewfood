@@ -18,3 +18,11 @@ assert.equal((await call({...env, SITE_USER: 'sam'}, basic('bob', 'correct horse
 assert.equal((await call({...env, SITE_USER: 'sam'}, basic('sam', 'correct horse battery'))).status, 200);
 assert.equal((await call(env, {headers: {Authorization: 'Basic %%%'}})).status, 401, 'garbage header refused');
 console.log('worker tests passed');
+import fs from 'node:fs';
+const open = JSON.parse(fs.readFileSync('wrangler.jsonc', 'utf8').replace(/^\s*\/\/.*$/gm, ''));
+const gated = JSON.parse(fs.readFileSync('wrangler.password.jsonc', 'utf8').replace(/^\s*\/\/.*$/gm, ''));
+assert.equal(open.main, undefined, 'default config has no gate');
+assert.equal(gated.main, 'src/worker.js', 'password config uses the gate');
+assert.equal(gated.assets.run_worker_first, true);
+assert.equal(open.name, gated.name);
+console.log('config tests passed');

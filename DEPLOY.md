@@ -1,6 +1,6 @@
-# Deploying Crew Table on Cloudflare (private repo, password protected)
+# Deploying Crew Table on Cloudflare
 
-Crew Table is static files in `dist/`, served by a small Worker (`src/worker.js`) that asks for a password first. There is no database or backend. Plans are saved in each person's browser.
+Crew Table is static files in `dist/`. There is no database or backend. An optional password gate is in `src/worker.js`. Plans are saved in each person's browser.
 
 ## 1. Make the GitHub repo private
 GitHub > this repo > **Settings** > **General** > **Danger Zone** > **Change visibility** > **Make private**.
@@ -11,19 +11,15 @@ GitHub > this repo > **Settings** > **General** > **Danger Zone** > **Change vis
 3. Project name `crewfood` (it must match the `name` in wrangler.jsonc). Build command: leave empty. Deploy command: `npx wrangler deploy`.
 4. Deploy. Every push to `main` redeploys.
 
-## 3. Set the password (required)
-The site refuses everyone until a password is set.
-1. Workers & Pages > **crewfood** > **Settings** > **Variables and Secrets** > **Add**.
-2. Type **Secret**, name `SITE_PASSWORD`, value your password. Use a long phrase, for example four random words. Save and deploy.
-3. Optional: add another secret `SITE_USER` to also require a specific username. If you leave it out, any username works and only the password matters.
-4. Open the site in a private window. Your browser shows a sign-in box. Enter the password.
+## 3. Password: currently OFF
+The test link is open: anyone with the address can use the app. It only holds sample prices and wages, and each person's plans stay in their own browser. Do not share the link beyond the team.
 
-Secrets stay put when you redeploy. To change the password, edit the secret and deploy.
+To turn the password on again:
+1. In Cloudflare, Workers & Pages > **crewfood** > **Settings** > **Variables and Secrets**: add a Secret named `SITE_PASSWORD` with your password (a long phrase is best). Optional `SITE_USER` also requires a username.
+2. Settings > **Builds** > change the deploy command to `npx wrangler deploy -c wrangler.password.jsonc`, then push any commit or retry the deployment.
+3. Open the site in a private window. It should show a sign-in box.
 
-Notes:
-- Everyone shares one password. To cut someone off, change it and tell the others.
-- Browsers remember the password until they are closed. There is no log out button.
-- Nothing limits repeated guesses, so keep the password long. For named logins and an audit trail, use **Cloudflare Zero Trust > Access** instead: Add application > Self-hosted > Allow listed emails. It needs no code changes (delete `main` and `run_worker_first` from `wrangler.jsonc` if you move to Access).
+Cloudflare Zero Trust > Access (allow listed emails) is the alternative if you want named logins.
 
 ## 4. Day to day
 - Plans are per browser. Use **Plan files > Download backup** to move a plan between devices.
