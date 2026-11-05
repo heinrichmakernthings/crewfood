@@ -1,6 +1,7 @@
 // Plan checking and upgrading. Pure: no DOM, so tests can use it.
 import {DEFAULT} from './data.mjs';
 import {CLIENT_DEFAULT} from './reports.mjs';
+import {defaultRota, checkRota} from './rota.mjs';
 
 export function validate(s){
  if(!s||s.version!==4||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
@@ -32,6 +33,8 @@ export function validate(s){
  for(const r of s.recipes){if(!finite(r.weight)||!Array.isArray(r.lines)||r.lines.some(l=>!ids.has(l.ingredient)||!finite(l.qty)))throw Error('Check recipe ingredients and quantities.');}
  for(const p of s.phases){if(!finite(p.days,0,365)||!Array.isArray(p.groups)||!Array.isArray(p.staff))throw Error('Check the phase days and groups.');for(const g of p.groups)if(!finite(g.people,0,100000)||!Number.isInteger(g.people)||!Array.isArray(g.meals)||g.meals.length!==3||g.meals.some(x=>typeof x!=='boolean')||typeof g.extras!=='boolean')throw Error('Check group headcounts and meal choices.');for(const r of p.staff)if(!finite(r.people)||!finite(r.hours,0,24)||!finite(r.rate))throw Error('Check staffing values.');}
  for(const [k,v]of Object.entries(s.settings))if(!finite(v))throw Error('Check cost settings.');if(s.settings.margin>=100)throw Error('Profit margin must be below 100%.');for(const o of s.overheads)if(!finite(o.cost))throw Error('Check overhead costs.');
+ if(s.rota===undefined)s.rota=defaultRota(s);
+ checkRota(s.rota);
 }
 
 // Older plans (version 1 and 2) have a different menu. Keep the user's event, crew, prices and overheads; use the current menu.

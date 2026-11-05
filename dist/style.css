@@ -154,3 +154,22 @@ section.card{margin-bottom:14px}
 @media(max-width:1280px){.team-grid{grid-template-columns:minmax(0,1fr)}}
 .team-grid{grid-template-columns:minmax(0,1fr)}
 @media(min-width:1750px){.team-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}}
+
+/* Rota maker */
+.rota-apply{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:6px 0 18px}
+.rota-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.day-chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0;margin:0 -2px}
+.day-chip{flex:none;padding:7px 14px;border-radius:99px;font-size:13px;background:#fff}.day-chip[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
+.rota-rows{display:grid;gap:10px;margin-top:6px}
+.rota-row{display:grid;grid-template-columns:minmax(120px,1.1fr) repeat(3,minmax(0,1fr)) 92px;gap:12px;align-items:start;padding:12px;background:var(--paper);border:1px solid transparent;border-radius:12px}
+.rota-row.flag{border-color:#e0b4a8;background:#fff6f2}
+.rota-who{display:flex;flex-direction:column;gap:2px;min-width:0}.rota-who small,.rota-hours small{font-size:11px;color:var(--muted)}.rota-hours{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-variant-numeric:tabular-nums}.rota-hours b{font-size:18px}
+.shift{display:flex;flex-direction:column;gap:4px;min-width:0}.shift span{font-size:11px;color:var(--muted);letter-spacing:.03em;text-transform:uppercase}.shift select{width:100%;min-height:40px}.shift em{font-style:normal;font-size:11px;color:var(--green);min-height:14px}
+small.warn,.warn{color:#9b3724}small.warn{font-size:11px}
+.rota-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.rota-grid th,.rota-grid td{padding:8px 6px;text-align:center;font-size:13px;white-space:nowrap}.rota-grid td:first-child,.rota-grid th:first-child{text-align:left;padding-left:12px}
+.rota-grid .sel{background:var(--light)}.rota-grid td.warn{background:#fff0e8;font-weight:700}
+.grid-day{border:0;background:none;padding:2px 6px;font-size:12px;color:var(--green);text-decoration:underline;text-underline-offset:3px}
+.rota-people td{vertical-align:middle}.rota-people input.name{width:150px}.rota-people select{max-width:170px}.rota-people .chips{flex-wrap:nowrap}.rota-people .chip span{min-height:30px;padding:3px 10px;font-size:12px}
+@media(max-width:700px){.rota-row{grid-template-columns:repeat(3,minmax(0,1fr))}.rota-who{grid-column:1/-1;flex-direction:row;align-items:baseline;gap:8px}.rota-hours{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:baseline}.rota-who small{font-size:12px}}
+@media print{.day-chips,.rota-actions,.rota-apply{display:none!important}}

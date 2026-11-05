@@ -142,3 +142,50 @@ const bad=structuredClone(st);bad.recipes.slice(0,4).forEach(r=>r.weight=0);asse
 import('./dist/team.mjs').then(({renderTeam})=>{const h={esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n))};const html=renderTeam(st,c,h);assert.ok(html.includes('Lead cook')&&html.includes('£2890.00')&&html.includes('Total team cost'));assert.ok(renderTeam(none,calculate(none),h).includes('No staff set up yet'));console.log('team view tests passed');});
 }
 console.log('team tests passed');
+// Rota maker
+import('./dist/rota.mjs').then(R=>{
+const st=structuredClone(DEFAULT);st.rota=R.defaultRota(st);const c=calculate(st);
+assert.deepEqual(st.rota.people.map(p=>p.name),['Lead cook','Cook 1','Cook 2','Kitchen assistant 1','Kitchen assistant 2']);
+assert.deepEqual(st.rota.people[2].stages,[false,true,false],'second cook is only on site for Live');
+assert.deepEqual(st.rota.days.map(d=>d.length),[10,3,4],'one rota day per stage day');
+R.checkRota(st.rota);
+for(const d of st.rota.days)for(const day of d)for(const sh of Object.values(day))assert.ok(sh.every(x=>x===0||x===4||x===6),'only 4 or 6 hour shifts');
+const sm=R.rotaSummary(st);
+assert.equal(sm.hours,c.team.paidHours,'default rota hours match the costed hours');assert.ok(Math.abs(sm.pay-c.team.gross)<1e-9,'default rota pay matches the quote');
+assert.equal(sm.people[0].stages[0].hours,100,'lead cook: 10 hours a day for 10 days');
+// every service has cover on a normal day
+for(let si=0;si<3;si++)assert.ok(st.rota.people.some(p=>p.stages[1]&&R.dayEntry(st.rota,1,0)[p.id][si]>0),'service '+si+' is covered in Live');
+// shift times
+assert.equal(R.shiftTimes(0,4),'6am to 10am');assert.equal(R.shiftTimes(0,6),'6am to 12pm');assert.equal(R.shiftTimes(1,4),'10am to 2pm');assert.equal(R.shiftTimes(1,6),'10am to 4pm');assert.equal(R.shiftTimes(2,4),'4pm to 8pm');assert.equal(R.shiftTimes(2,6),'4pm to 10pm');assert.equal(R.shiftTimes(0,0),'');
+// flags
+assert.equal(R.dayFlags([6,4,0]).overlap,true,'6 hour breakfast runs into lunch');assert.equal(R.dayFlags([4,6,0]).overlap,false);assert.equal(R.dayFlags([0,6,4]).overlap,false);assert.equal(R.dayFlags([6,0,6]).long,true);assert.equal(R.dayFlags([4,6,0]).long,false);
+// editing
+const e=structuredClone(st);const lead=e.rota.people[0].id;
+R.setShift(e,0,2,lead,0,6);assert.deepEqual(R.dayEntry(e.rota,0,2)[lead],[6,6,0]);assert.deepEqual(R.dayEntry(e.rota,0,3)[lead],[4,6,0],'other days unchanged');
+R.setShift(e,0,2,lead,0,5);assert.deepEqual(R.dayEntry(e.rota,0,2)[lead],[6,6,0],'a 5 hour shift is refused');
+R.copyDayToAll(e,0,2);assert.ok(e.rota.days[0].every(d=>d[lead][0]===6),'copied to every day');
+R.clearDay(e,0,1);assert.deepEqual(e.rota.days[0][1],{});R.copyDayTo(e,0,0,1);assert.deepEqual(e.rota.days[0][1][lead],[6,6,0]);
+const longer=structuredClone(st);longer.phases[0].days=12;assert.deepEqual(R.dayEntry(longer.rota,0,11),R.dayEntry(longer.rota,0,9),'extra days use the last saved day');
+R.setShift(longer,0,11,lead,2,4);assert.equal(longer.rota.days[0].length,12);assert.equal(R.dayEntry(longer.rota,0,10)[lead][2],0);
+// people
+const p=structuredClone(st);R.addPerson(p);assert.equal(p.rota.people.length,6);assert.equal(new Set(p.rota.people.map(x=>x.id)).size,6);validate(p);
+R.removePerson(p,0);assert.equal(p.rota.people.length,5);assert.ok(p.rota.days.every(l=>l.every(d=>!(lead in d))),'removed person leaves the rota');validate(p);
+const unknown=structuredClone(st);unknown.rota.people[0].role='Pastry chef';const us=R.rotaSummary(unknown);assert.deepEqual(us.noRate,['Lead cook']);assert.equal(us.people[0].pay,0);
+// apply to costs
+const a=structuredClone(st);R.copyDayToAll(a,0,0);R.setShift(a,0,0,lead,1,0);R.setShift(a,0,0,lead,2,0);R.setShift(a,0,0,lead,0,6);R.copyDayToAll(a,0,0);
+const ap=R.applyRotaToCosts(a);assert.ok(ap.changed>0);
+const ca=calculate(a),sa=R.rotaSummary(a);assert.ok(Math.abs(ca.team.gross-sa.pay)<1e-6,'after applying, the quote pay equals the rota pay');assert.ok(Math.abs(ca.team.paidHours-sa.hours)<1e-6);
+assert.equal(a.phases[0].staff.find(r=>r.name==='Lead cook').hours,6,'lead cook now 6 hours a day in Build');
+assert.ok(ca.price<c.price,'fewer paid hours lowers the price');
+const idle=structuredClone(st);idle.rota.people.forEach(x=>{x.stages[2]=false});const before=structuredClone(idle.phases[2].staff);R.applyRotaToCosts(idle);assert.deepEqual(idle.phases[2].staff,before,'a stage with no rota people is left alone');
+const miss=structuredClone(unknown),costBefore=structuredClone(miss.phases);const am=R.applyRotaToCosts(miss);assert.deepEqual(am.skipped,['Pastry chef'],'a role with no costing line is skipped and reported');assert.ok(am.message.includes('Pastry chef'));assert.equal(miss.phases[0].staff.length,costBefore[0].staff.length,'no costing lines are invented');
+// validation and old plans
+const old=structuredClone(DEFAULT);delete old.rota;validate(old);assert.equal(old.rota.people.length,5,'plans without a rota get one from the costed team');
+for(const mut of [x=>{x.rota.days[0][0][x.rota.people[0].id]=[5,0,0]},x=>{x.rota.people[1].id=x.rota.people[0].id},x=>{x.rota.days=[[],[]]},x=>{x.rota.people[0].stages=[true]},x=>{x.rota.days[0][0].nobody=[0,0,0]}]){const b=structuredClone(st);mut(b);assert.throws(()=>validate(b));}
+// rendering
+const html=R.renderRota(st,c,{phase:1,day:0,tabs:'<div class="phase-tabs"></div>'},{esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n))});
+assert.equal((html.match(/data-rota=/g)||[]).length,5*3,'5 people on site in Live, 3 services each');
+assert.ok(html.includes('Day 1')&&html.includes('Breakfast')&&html.includes('6am to 10am')&&html.includes('Use this rota in the quote'));
+const none=structuredClone(st);none.phases[1].days=0;assert.ok(R.renderRota(none,calculate(none),{phase:1,day:0,tabs:''},{esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n))}).includes('has no days'));
+console.log('rota tests passed');
+});
