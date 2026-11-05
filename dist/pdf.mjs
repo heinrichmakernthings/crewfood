@@ -8,7 +8,7 @@ const GREY = '#596769', INK = '#252f32';
 // jsPDF's built-in fonts only cover Latin-1, so swap common symbols and drop anything else.
 export const clean = s => String(s ?? '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, '-').replace(/…/g, '...').replace(/[^\x20-\x7E\xA0-\xFF]/g, '?');
 export const money = n => '£' + new Intl.NumberFormat('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(n);
-const whole = n => new Intl.NumberFormat('en-GB', {maximumFractionDigits: 0}).format(n);
+const wholeN = n => new Intl.NumberFormat('en-GB', {maximumFractionDigits: 0}).format(n);
 
 export function pdfFileName(state) {
   const base = (state.client && state.client.clientName) || state.name || 'Catering quote';
@@ -89,7 +89,7 @@ export function buildQuotePdf(JsPDF, state, c, two, three, brandIn, today) {
   if (cl.contact) text(cl.contact, M, y + 11, {size: 9, color: GREY});
   const evLines = wrap(state.name, half - 6, 12, true).slice(0, 2);
   evLines.forEach((ln, i) => text(ln, M + half + 4, y + 6 + i * 5.2, {size: 12, bold: true}));
-  text(`${whole(q.days)} days of catering · ${whole(q.meals)} meals`, M + half + 4, y + 6 + evLines.length * 5.2 + 0.5, {size: 9, color: GREY});
+  text(`${wholeN(q.days)} days of catering · ${wholeN(q.meals)} meals`, M + half + 4, y + 6 + evLines.length * 5.2 + 0.5, {size: 9, color: GREY});
   y += 22;
 
   // Total
@@ -116,9 +116,9 @@ export function buildQuotePdf(JsPDF, state, c, two, three, brandIn, today) {
   y += 5.2;
   q.phases.forEach(p => {
     text(p.name, M, y, {size: 9.5});
-    text(whole(p.days), cx.days, y, {size: 9.5, align: 'right'});
-    text(whole(p.people), cx.people, y, {size: 9.5, align: 'right'});
-    text(whole(p.meals), cx.meals, y, {size: 9.5, align: 'right'});
+    text(wholeN(p.days), cx.days, y, {size: 9.5, align: 'right'});
+    text(wholeN(p.people), cx.people, y, {size: 9.5, align: 'right'});
+    text(wholeN(p.meals), cx.meals, y, {size: 9.5, align: 'right'});
     text(money(p.price), cx.price, y, {size: 9.5, bold: true, align: 'right'});
     y += 2;
     rule(y, '#e8ece6', 0.15);
@@ -153,7 +153,7 @@ export function buildQuotePdf(JsPDF, state, c, two, three, brandIn, today) {
   q.groups.forEach(g => {
     const key = `${g.phase}|${g.meals}`;
     if (!stages.has(key)) stages.set(key, {phase: g.phase, meals: g.meals, names: []});
-    stages.get(key).names.push(`${g.name} (${whole(g.people)})`);
+    stages.get(key).names.push(`${g.name} (${wholeN(g.people)})`);
   });
   const crewLines = [...stages.values()].map(s => `${s.phase}: ${s.names.join(', ')}. ${s.meals}.`);
   const items = ['Experienced catering team to prepare, cook and serve', 'All ingredients, plates, cutlery and napkins', ...q.menu.everyDay, q.fee ? 'Kitchen equipment supplied (equipment fee shown above)' : 'Kitchen equipment, fuel and cleaning'];
@@ -218,7 +218,7 @@ export function buildQuotePdf(JsPDF, state, c, two, three, brandIn, today) {
 
   // Terms
   const terms = wrap(cl.terms, CW, 7.5);
-  const validity = `${q.vatRate ? '' : 'Prices exclude VAT. '}This quote is valid for ${whole(cl.validDays)} days, until ${longDate(addDays(date, cl.validDays))}.`;
+  const validity = `${q.vatRate ? '' : 'Prices exclude VAT. '}This quote is valid for ${wholeN(cl.validDays)} days, until ${longDate(addDays(date, cl.validDays))}.`;
   ensure(16 + terms.length * 3.4 + 6);
   section('Terms');
   terms.forEach((ln, i) => text(ln, M, y + i * 3.4, {size: 7.5, color: GREY}));
