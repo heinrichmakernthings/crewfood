@@ -82,3 +82,28 @@ const bad=structuredClone(st);bad.kit.feeBasis='week';assert.throws(()=>validate
 const bad2=structuredClone(st);bad2.kit.feeAmount=-5;assert.throws(()=>validate(bad2));
 }
 console.log('kit charge tests passed');
+// Granular options: each option can apply to some stages only, with its own amount
+{const st=structuredClone(DEFAULT),all=calculate(st),F=17,C=19,D=18;
+assert.deepEqual(st.optionStages.fruit,[true,true,true]);
+const noLive=structuredClone(st);noLive.optionStages.fruit[1]=false;const nl=calculate(noLive);
+const liveDays=structuredClone(st);liveDays.phases[1].days=0;
+assert.ok(Math.abs(nl.servings[F]-calculate(liveDays).servings[F])<1e-9,'fruit off in Live = fruit only in Build and Break');
+assert.ok(nl.servings[F]<all.servings[F]&&nl.servings[F]>0);assert.equal(nl.servings[18],all.servings[18],'other options unchanged');
+assert.ok(nl.price<all.price);
+const none=structuredClone(st);none.optionStages.fruit=[false,false,false];const off=structuredClone(st);off.options.fruit=false;
+assert.equal(calculate(none).price,calculate(off).price,'no stages ticked = option off');
+const cerBuild=structuredClone(st);cerBuild.optionStages.cereal=[true,false,false];const cb=calculate(cerBuild);
+const buildBreakfasts=sum(all.groups.filter(g=>g.pi===0).map(g=>g.breakfast));assert.ok(Math.abs(cb.servings[C]-buildBreakfasts*st.settings.cereal)<1e-9,'cereal in Build only');
+const qty=structuredClone(st);qty.settings.fruit=1;assert.ok(Math.abs(calculate(qty).servings[F]-all.servings[F]/2)<1e-9,'amount scales the servings');
+const noDrinks=structuredClone(st);noDrinks.optionStages.drinks=[false,false,false];assert.equal(calculate(noDrinks).energy.find(e=>e.key==='urn').units,0,'no drinks, no urn');
+assert.ok(calculate(noDrinks).consumables<all.consumables,'cups follow the drinks stages');
+// client quote says which stages
+const t2=calculate(noLive,'two'),t3=calculate(noLive,'three'),h={esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n)),today:'2026-11-05'};
+assert.ok(renderClientQuote(noLive,nl,t2,t3,h).includes('Fresh fruit (Build &amp; Break only)')||renderClientQuote(noLive,nl,t2,t3,h).includes('Fresh fruit (Build & Break only)'));
+assert.ok(renderClientQuote(st,all,calculate(st,'two'),calculate(st,'three'),h).includes('Fresh fruit<'),'all stages: no suffix');
+// old plans and bad values
+const old=structuredClone(st);delete old.optionStages;validate(old);assert.deepEqual(old.optionStages,DEFAULT.optionStages);
+const bad=structuredClone(st);bad.optionStages.fruit=[true,true];assert.throws(()=>validate(bad));
+const bad2=structuredClone(st);bad2.optionStages.salads=[1,1,1];assert.throws(()=>validate(bad2));
+}
+console.log('granular option tests passed');

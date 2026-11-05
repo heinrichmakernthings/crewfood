@@ -1906,5 +1906,27 @@ export const DEFAULT = {
     "fee": false,
     "feeAmount": 100,
     "feeBasis": "day"
+  },
+  "optionStages": {
+    "fruit": [
+      true,
+      true,
+      true
+    ],
+    "drinks": [
+      true,
+      true,
+      true
+    ],
+    "cereal": [
+      true,
+      true,
+      true
+    ],
+    "salads": [
+      true,
+      true,
+      true
+    ]
   }
 };

@@ -72,3 +72,6 @@ Calculation tests passed on the packaged source. Dashboard navigation and a day-
 
 ## Installable app
 The app installs from the browser and works offline (service worker caches every file listed in sw.js). Inputs keep focus after a value is saved, so Tab moves through fields without losing your place. `node test-pwa.mjs` checks the manifest, icons and cached file list.
+
+## Granular client options
+Each option (hot drinks, fruit, cereal station, big salads) has a master tick (state.options), a tick per stage (state.optionStages, Build/Live/Break) and its own amount (settings.drinks, fruit, cereal, salads), all set on the dashboard card. An option with no stages ticked is the same as off. The client quote lists each option and adds "(Live only)" style wording when it does not cover every stage.

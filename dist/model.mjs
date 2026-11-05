@@ -1,25 +1,25 @@
 export const sum=a=>a.reduce((s,v)=>s+v,0);
 export function calculate(s,mode='mixed'){
- const t=s.settings, kit={energy:true,fee:false,feeAmount:0,feeBasis:'day',...(s.kit||{})}, opt={fruit:true,drinks:true,cereal:true,salads:true,...(s.options||{})}, onIn=(r,pi)=>!r.phases||r.phases[pi]!==false, waste=1+t.waste/100, ing=new Map(s.ingredients.map(i=>[i.id,i]));
+ const t=s.settings, kit={energy:true,fee:false,feeAmount:0,feeBasis:'day',...(s.kit||{})}, opt={fruit:true,drinks:true,cereal:true,salads:true,...(s.options||{})}, stg={...(s.optionStages||{})}, onIn=(r,pi)=>!r.phases||r.phases[pi]!==false, waste=1+t.waste/100, ing=new Map(s.ingredients.map(i=>[i.id,i]));
  const unit=i=>i.price/(i.pack*i.yield);
  const recipeCosts=s.recipes.map(r=>sum(r.lines.map(l=>l.qty*unit(ing.get(l.ingredient))))*waste);
  const breakfast=s.recipes.filter(r=>r.type==='Breakfast'), mains=s.recipes.filter(r=>r.type==='Main');
  const errors=[];
  let groups=[],phaseCosts=[],servings=s.recipes.map(()=>0),phaseServ=s.phases.map(()=>s.recipes.map(()=>0)),pd=0,meals=0,food=0,labour=0,consumables=0;
  for(let pi=0;pi<s.phases.length;pi++){
-  const p=s.phases[pi], bw=sum(breakfast.filter(r=>onIn(r,pi)).map(r=>r.weight)),mw=sum(mains.filter(r=>onIn(r,pi)).map(r=>r.weight)), phasePD=sum(p.groups.map(g=>g.people*p.days));
+  const on=k=>!!opt[k]&&(!stg[k]||stg[k][pi]!==false), p=s.phases[pi], bw=sum(breakfast.filter(r=>onIn(r,pi)).map(r=>r.weight)),mw=sum(mains.filter(r=>onIn(r,pi)).map(r=>r.weight)), phasePD=sum(p.groups.map(g=>g.people*p.days));
   const staff=sum(p.staff.map(r=>r.people*r.hours*r.rate))*p.days*(1+t.oncost/100);
   labour+=staff;
   for(let gi=0;gi<p.groups.length;gi++){
    const g=p.groups[gi], flags=mode==='two'?[false,true,true]:mode==='three'?[true,true,true]:g.meals;
    const days=g.people*p.days, b=flags[0]?days:0, m=(+flags[1]+ +flags[2])*days;
    const share=(r,total,n)=>total&&onIn(r,pi)?n*r.weight/total:0;
-   let portions=s.recipes.map(r=>r.type==='Breakfast'?share(r,bw,b):r.type==='Main'?share(r,mw,m):r.key==='salad'?(opt.salads?m*t.salads:0):r.key==='fruit'?(g.extras&&opt.fruit?days*t.fruit:0):r.key==='drinks'?(g.extras&&opt.drinks?days*t.drinks:0):r.key==='cereal'?(opt.cereal?b*t.cereal:0):0);
+   let portions=s.recipes.map(r=>r.type==='Breakfast'?share(r,bw,b):r.type==='Main'?share(r,mw,m):r.key==='salad'?(on('salads')?m*t.salads:0):r.key==='fruit'?(g.extras&&on('fruit')?days*t.fruit:0):r.key==='drinks'?(g.extras&&on('drinks')?days*t.drinks:0):r.key==='cereal'?(on('cereal')?b*t.cereal:0):0);
    if(b>0&&!bw&&!errors.some(e=>e.startsWith('Breakfast covers in '+p.name)))errors.push('Breakfast covers in '+p.name+' have no menu. Tick a breakfast for '+p.name+' and give it a positive weight.');
    if(m>0&&!mw&&!errors.some(e=>e.startsWith('Lunch / dinner covers in '+p.name)))errors.push('Lunch / dinner covers in '+p.name+' have no menu. Tick a main for '+p.name+' and give it a positive weight.');
    portions.forEach((v,i)=>{servings[i]+=v;phaseServ[pi][i]+=v;});
    const f=sum(portions.map((v,i)=>v*recipeCosts[i]));
-   const c=(b+m)*t.disposables+(g.extras&&opt.drinks?days*t.drinks*t.cups:0);
+   const c=(b+m)*t.disposables+(g.extras&&on('drinks')?days*t.drinks*t.cups:0);
    groups.push({portions,pi,gi,name:g.name,pd:days,meals:b+m,breakfast:b,mains:m,food:f,consumables:c,labour:phasePD?staff*days/phasePD:0,daily:phasePD?p.days*t.daily*days/phasePD:0});
    pd+=days;meals+=b+m;food+=f;consumables+=c;
   }

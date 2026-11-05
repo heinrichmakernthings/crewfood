@@ -76,10 +76,17 @@ export function clientQuote(state, c, two, three) {
     return [where.length === liveNames.length ? r.name : `${r.name} (${where.join(' & ')} only)`];
   });
   const everyDay = [];
-  if (opt.salads && t.salads > 0) everyDay.push('Big salads with lunch and dinner');
-  if (opt.cereal && t.cereal > 0) everyDay.push('Cereal station at breakfast');
-  if (opt.fruit && t.fruit > 0) everyDay.push('Fresh fruit');
-  if (opt.drinks && t.drinks > 0) everyDay.push('Tea, coffee, milk and sugar');
+  const stg = state.optionStages || {};
+  const where = k => {
+    if (!opt[k] || !(t[k] > 0)) return null;
+    const names = state.phases.filter((p, i) => live[i] && (!stg[k] || stg[k][i] !== false)).map(p => p.name);
+    if (!names.length) return null;
+    return names.length === liveNames.length ? '' : ` (${names.join(' & ')} only)`;
+  };
+  [['salads', 'Big salads with lunch and dinner'], ['cereal', 'Cereal station at breakfast'], ['fruit', 'Fresh fruit'], ['drinks', 'Tea, coffee, milk and sugar']].forEach(([k, text]) => {
+    const w = where(k);
+    if (w !== null) everyDay.push(text + w);
+  });
   return {
     cl, vatRate, net, vat, fee, total: pence(net + vat), phases: active, groups,
     days: sum(active.map(p => p.days)), meals: c.meals, personDays: c.pd,

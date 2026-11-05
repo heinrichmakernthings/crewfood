@@ -128,3 +128,15 @@
 .opt-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .kit-fee{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:14px;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;font-size:14px}.kit-fee label{display:flex;align-items:center;gap:8px;color:var(--muted)}.kit-fee input[type=number]{width:96px}
 @media(max-width:640px){.opt-grid.two{grid-template-columns:1fr}}
+
+/* Option cards with stage ticks and an amount */
+.opt.rich{display:flex;flex-direction:column;gap:12px;cursor:default;align-items:stretch}
+.opt-head{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;cursor:pointer}
+.opt-detail{display:flex;flex-direction:column;gap:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{position:relative;cursor:pointer}.chip input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.chip span{display:inline-flex;align-items:center;min-height:36px;padding:6px 14px;border:1px solid var(--control-border,#b9c4bc);border-radius:99px;background:#fff;color:var(--muted);font-size:13px;font-weight:600}
+.chip input:checked+span{background:var(--green);border-color:var(--green);color:#fff}
+.chip input:focus-visible+span{outline:3px solid #e8aa56;outline-offset:2px}
+.qty{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted)}.qty input{width:84px;font-size:16px}
+.opt.rich .opt-price{border-top:1px dashed var(--line);padding-top:10px;margin-top:auto}
