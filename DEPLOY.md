@@ -8,12 +8,12 @@ GitHub > this repo > **Settings** > **General** > **Danger Zone** > **Change vis
 ## 2. Connect it to Cloudflare
 1. Cloudflare dashboard > **Workers & Pages** > **Create** > **Import a repository**.
 2. When asked, let the Cloudflare GitHub app see this repo (choose "Only select repositories" and tick it). This is what lets a private repo deploy.
-3. Project name `crew-table`. Build command: leave empty. Deploy command: `npx wrangler deploy`.
+3. Project name `crewfood` (it must match the `name` in wrangler.jsonc). Build command: leave empty. Deploy command: `npx wrangler deploy`.
 4. Deploy. Every push to `main` redeploys.
 
 ## 3. Set the password (required)
 The site refuses everyone until a password is set.
-1. Workers & Pages > **crew-table** > **Settings** > **Variables and Secrets** > **Add**.
+1. Workers & Pages > **crewfood** > **Settings** > **Variables and Secrets** > **Add**.
 2. Type **Secret**, name `SITE_PASSWORD`, value your password. Use a long phrase, for example four random words. Save and deploy.
 3. Optional: add another secret `SITE_USER` to also require a specific username. If you leave it out, any username works and only the password matters.
 4. Open the site in a private window. Your browser shows a sign-in box. Enter the password.

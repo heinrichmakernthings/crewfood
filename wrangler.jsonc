@@ -1,6 +1,6 @@
 {
   // Crew Table: static app behind a password (src/worker.js). No database or backend.
-  "name": "crew-table",
+  "name": "crewfood",
   "main": "src/worker.js",
   "compatibility_date": "2026-11-01",
   "assets": {
