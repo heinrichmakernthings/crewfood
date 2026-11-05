@@ -208,3 +208,47 @@ button.danger{background:#fff0e8;border-color:#e0b4a8;color:#9b3724}
 #save-form input:invalid{border-color:#b9c4bc;background:#fff}
 
 .salad-sum{background:var(--light);border-radius:10px;padding:10px 14px;margin:8px 0 12px;font-size:14px;color:var(--ink)}.salad-sum span{color:var(--muted);margin:0 4px}
+
+/* Ingredient crossover */
+.xkpis{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px}.xkpis .kpi strong{font-size:26px}
+.xwins{background:#fff7e6;border:1px solid #f0d9ae;border-radius:12px;padding:12px 16px;margin:0 0 14px;font-size:14px}.xwins p{margin:6px 0 0;color:#735425}.xwins b:first-child{color:#735425}
+.xtable td,.xtable th{padding:9px 10px;font-size:13px}.xtable small{display:block;font-size:11px;color:var(--muted)}.xtable td.rank{width:34px;color:var(--muted);font-variant-numeric:tabular-nums}
+.xbar{display:inline-block;vertical-align:middle;width:90px;height:8px;background:#e8ece6;border-radius:99px;overflow:hidden;margin-right:8px}.xbar span{display:block;height:100%;border-radius:99px}
+.xbar .good,.xtag.good{background:var(--green)}.xbar .ok,.xtag.ok{background:#d98b2b}.xbar .low,.xtag.low{background:#b4472a}
+.xtag{display:inline-block;color:#fff;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.03em;text-transform:uppercase;vertical-align:middle}
+section.card .disclosure{margin-top:12px}
+@media(max-width:1280px){.xkpis{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:640px){.xkpis{grid-template-columns:1fr}}
+
+/* Tidy-up: live quote as a pill, compact dashboard, menu rows and shopping rows */
+.workspace{display:block;max-width:1280px;padding:16px 28px 60px}
+@media(max-width:899px){.workspace{padding:14px max(16px,env(safe-area-inset-left)) calc(96px + env(safe-area-inset-bottom))}}
+.quote-pop{position:fixed;right:24px;top:80px;width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 100px);overflow:auto;z-index:40;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.quote-pop .quote-sheet{position:static;border:0;border-radius:0;padding:22px}
+.quote-sheet .plain{width:100%;margin-top:8px}
+@media(max-width:899px){.quote-pop{left:12px;right:12px;width:auto}}
+.qpill{display:flex;align-items:baseline;gap:8px;padding:7px 12px;border-radius:10px;background:#fff;border-color:var(--green);color:var(--ink);white-space:nowrap;flex:none}
+.qpill span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}.qpill b{font-size:16px;font-variant-numeric:tabular-nums;color:var(--green)}.qpill small{font-size:11px;color:var(--muted);font-weight:400}
+.qpill i{width:7px;height:7px;border-right:2px solid var(--green);border-bottom:2px solid var(--green);transform:rotate(45deg) translateY(-2px);align-self:center;margin-left:2px}.qpill[aria-expanded=true] i{transform:rotate(-135deg) translateY(-2px)}
+@media(max-width:899px){.qpill{padding:6px 10px}.qpill small{display:none}.titlebox{flex:1 1 0}}
+@media print{.quote-pop,.qpill{display:none!important}}
+.opt.rich{gap:8px;padding:14px 16px}.opt.rich .opt-head{gap:10px}.opt.rich .opt-detail{gap:8px;padding-top:8px}.opt input[type=checkbox]{width:20px;height:20px}
+.opt.rich .chips{flex-wrap:nowrap;gap:6px}.opt.rich .chip span{min-height:28px;padding:2px 11px;font-size:12px}
+.qty{font-size:12px}.qty input{width:64px;padding:6px 8px;font-size:15px}.opt-price{padding-top:8px}
+.sub-h{margin:18px 0 10px;font-size:15px}.sub-h span{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+.opt-grid.two .opt{padding:12px 16px}
+.donut svg{width:min(150px,100%)}.donut{gap:12px}.card{padding:18px}.chart-grid{margin-bottom:22px}
+.dashboard-head{margin-bottom:4px}.dash-options{margin-bottom:22px}.dashboard-phases{margin:22px 0}.kpis{margin-bottom:20px}
+.seg{margin:2px 0 14px}.section-heading{margin-bottom:12px}.section-heading p{margin-top:4px}
+.recipe-row{display:grid;grid-template-columns:minmax(0,1fr) auto 84px 84px;grid-template-areas:"n p w c";gap:6px 16px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.rn{grid-area:n;min-width:0}.rp{grid-area:p}.rw{grid-area:w;display:flex;flex-direction:column;align-items:flex-start}.rc{grid-area:c;text-align:right;font-size:16px}
+.recipe-row .rn button{font-size:15px}.recipe-row .rn small{margin-top:2px}
+.recipe-row .rw input{width:68px;padding:6px 8px}.recipe-row .rw small,.recipe-row .rc small{font-size:10.5px;margin-top:1px;display:block}
+.phase-chips.rp{margin-top:0;gap:10px}
+@media(max-width:700px){.recipe-row{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n c" "p w"}.rc{align-self:start}}
+.cost-section{margin:20px 0}.cost-section h3{margin-bottom:6px}p.note:empty{display:none}
+.shopping td{padding:8px 10px}.shopping th{padding:10px}.shopping input{width:72px;padding:6px 8px}.inl{display:flex;align-items:center;gap:6px}.inl small{margin:0}.ingredient-name small{margin-top:1px}.shopping td.numeric{white-space:nowrap}.shopping .ingredient-name{min-width:240px}
+@media(max-width:640px){.kpis,.team-kpis,.xkpis,.energy-kpis{grid-template-columns:1fr 1fr;gap:10px}.kpi{padding:12px 14px}.kpi strong{font-size:20px}.kpi.main{grid-column:1/-1}.kpi.main strong{font-size:28px}}
+.dashboard-head h2{margin-top:0}.dashboard-head>div>p{margin:2px 0 10px}
+#event-name{text-overflow:ellipsis}
+@media(max-width:700px){.rw{flex-direction:row;align-items:center;gap:6px}.rw small{order:2}.recipe-row{gap:4px 12px}}

@@ -4,7 +4,7 @@ import {CLIENT_DEFAULT} from './reports.mjs';
 import {defaultRota, checkRota} from './rota.mjs';
 
 export function validate(s){
- if(!s||s.version!==5||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
+ if(!s||s.version!==6||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
  const finite=(n,min=0,max=1e7)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
  const short=v=>typeof v==='string'&&v.length<=500;
  if(!short(s.name)||s.ingredients.length<1||s.ingredients.length>300||s.overheads.length>100)throw Error('Check the event name and plan size.');
@@ -42,6 +42,7 @@ export function migrate(s) {
   if (!s || typeof s !== 'object') return s;
   if (s.version === 3) return migrate4(migrate3(s));
   if (s.version === 4) return migrate4(s);
+  if (s.version === 5) return migrate5(s);
   if (s.version !== 1 && s.version !== 2) return s;
   const v1 = s.version === 1, keep = v1 ? 36 : 51;
   const n = structuredClone(DEFAULT);
@@ -93,11 +94,11 @@ function migrate3(s) {
   return n;
 }
 
-// Version 4 plans had one "Big salads" recipe. Version 5 has a salad menu (leaf, tomato and cucumber, coleslaw,
-// shredded carrot) and two salads with every lunch and dinner.
+// Version 4 plans had one "Big salads" recipe. Version 6 has a salad menu (leaf salad, everything salad, coleslaw)
+// and two salads with every lunch and dinner.
 function migrate4(s) {
   const n = structuredClone(s);
-  n.version = 5;
+  n.version = 6;
   if (Array.isArray(n.ingredients) && Array.isArray(n.recipes)) {
     const have = n.ingredients.find(i => i && i.id === 54);
     const clash = have && have.name !== 'Mayonnaise' ? have : null;
@@ -108,8 +109,21 @@ function migrate4(s) {
     }
     if (!(have && have.name === 'Mayonnaise')) n.ingredients.push({...DEFAULT.ingredients.find(i => i.id === 54)});
     if (n.recipes[16] && n.recipes[16].key === 'salad') n.recipes[16] = structuredClone(DEFAULT.recipes[16]);
-    if (n.recipes.length === 20) [20, 21, 22].forEach(i => n.recipes.push(structuredClone(DEFAULT.recipes[i])));
+    if (n.recipes.length === 20) [20, 21].forEach(i => n.recipes.push(structuredClone(DEFAULT.recipes[i])));
   }
   if (n.settings && (n.settings.salads === 1 || !Number.isFinite(n.settings.salads))) n.settings.salads = 2;
+  return n;
+}
+
+// Version 5 plans had four salads. Version 6 has three: leaf salad, everything salad (leaves, tomato, shredded carrot) and coleslaw.
+function migrate5(s) {
+  const n = structuredClone(s);
+  n.version = 6;
+  if (Array.isArray(n.recipes) && n.recipes.length === 23 && n.recipes[22] && n.recipes[22].key === 'carrot-salad') {
+    n.recipes.pop();
+    if (n.recipes[20] && n.recipes[20].key === 'tomato-cucumber-salad') n.recipes[20] = structuredClone(DEFAULT.recipes[20]);
+    const leaf = n.recipes[16], slaw = n.recipes[21];
+    if (leaf && slaw && leaf.weight === 35 && slaw.weight === 25) { leaf.weight = DEFAULT.recipes[16].weight; slaw.weight = DEFAULT.recipes[21].weight; }
+  }
   return n;
 }

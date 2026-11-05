@@ -1,5 +1,5 @@
 export const DEFAULT = {
-  "version": 5,
+  "version": 6,
   "name": "Festival crew catering",
   "ingredients": [
     {
@@ -1524,7 +1524,7 @@ export const DEFAULT = {
       "key": "leaf-salad",
       "name": "Leaf salad",
       "note": "Lettuce with a light dressing, about 50g a serving",
-      "weight": 35,
+      "weight": 40,
       "phases": [
         true,
         true,
@@ -1639,10 +1639,10 @@ export const DEFAULT = {
     {
       "id": 20,
       "type": "Salad",
-      "key": "tomato-cucumber-salad",
-      "name": "Tomato and cucumber salad",
-      "note": "Sliced tomato and cucumber with onion, about 120g a serving",
-      "weight": 25,
+      "key": "everything-salad",
+      "name": "Everything salad",
+      "note": "Leaves, tomato and shredded carrot with a light dressing, about 110g a serving",
+      "weight": 30,
       "phases": [
         true,
         true,
@@ -1650,16 +1650,16 @@ export const DEFAULT = {
       ],
       "lines": [
         {
+          "ingredient": 28,
+          "qty": 0.04
+        },
+        {
           "ingredient": 51,
           "qty": 0.06
         },
         {
-          "ingredient": 29,
-          "qty": 0.05
-        },
-        {
-          "ingredient": 6,
-          "qty": 0.01
+          "ingredient": 7,
+          "qty": 0.04
         },
         {
           "ingredient": 9,
@@ -1667,11 +1667,7 @@ export const DEFAULT = {
         },
         {
           "ingredient": 30,
-          "qty": 0.004
-        },
-        {
-          "ingredient": 34,
-          "qty": 0.0005
+          "qty": 0.003
         }
       ],
       "equipment": []
@@ -1682,7 +1678,7 @@ export const DEFAULT = {
       "key": "coleslaw",
       "name": "Coleslaw",
       "note": "Cabbage, carrot and onion in mayonnaise, about 110g a serving",
-      "weight": 25,
+      "weight": 30,
       "phases": [
         true,
         true,
@@ -1712,34 +1708,6 @@ export const DEFAULT = {
         {
           "ingredient": 34,
           "qty": 0.0005
-        }
-      ],
-      "equipment": []
-    },
-    {
-      "id": 22,
-      "type": "Salad",
-      "key": "carrot-salad",
-      "name": "Shredded carrot salad",
-      "note": "Shredded carrot with a light dressing, about 80g a serving",
-      "weight": 15,
-      "phases": [
-        true,
-        true,
-        true
-      ],
-      "lines": [
-        {
-          "ingredient": 7,
-          "qty": 0.08
-        },
-        {
-          "ingredient": 9,
-          "qty": 0.004
-        },
-        {
-          "ingredient": 30,
-          "qty": 0.003
         }
       ],
       "equipment": []

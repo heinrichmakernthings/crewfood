@@ -93,3 +93,10 @@ The Pay & rota tab has a second view, Rota. Crew & meals is its own main tab. Ea
 
 ## Salads (plan version 5)
 Salads are their own recipe type, not one big recipe: leaf salad, tomato and cucumber, coleslaw and shredded carrot, each costed per serving (about 50 to 120g) from real ingredients (lettuce, cucumber, tomato, cabbage, carrot, onion, mayonnaise, oil and vinegar). Every lunch and dinner cover gets `settings.salads` salads (default 2), split across the salad menu by each recipe's mix weight, and each salad can be ticked on or off per stage like a main. Menu & recipes shows the average cost per salad, per meal and for the event. If no salad is on the menu for a stage that serves lunch or dinner, the quote shows a menu warning unless salads are switched off. Version 4 plans upgrade automatically (the old Big salads recipe becomes the salad menu, and a setting of 1 becomes 2).
+
+## Ingredient crossover (Menu & recipes > Ingredient crossover)
+Ranks the meals being served by how efficient they are to buy for. A meal's score is the share of its ingredient cost that comes from ingredients at least one other served meal also uses; shared ingredients are bought in bigger batches and leave less unused stock. It also lists the ingredients used by the most meals, the share of food spend that is on shared ingredients, the value left unused in the last packs (already counted in costs), and up to three "easy wins": ingredients only one meal uses with a lot left over (drinks, fruit and cereal are skipped because they are bought in bulk anyway). Logic in `crossover.mjs`.
+
+## Layout notes
+- The live quote is a pill in the top bar on every editing screen; tap it for the breakdown, Client quote and Export CSV. This replaced the side panel so tables get the full width. The Dashboard, Reports and Quotes screens show the price themselves, so the pill is hidden there.
+- Tables and lists are kept to one line per row (Shopping list, Menu & recipes). The Dashboard has one "What does the client want?" section that includes the kitchen kit.

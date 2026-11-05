@@ -169,7 +169,7 @@ Source notes use warm fills and brown text. Warnings use warm red fills. The dar
 ### Do:
 
 - Do keep phase and group controls directly editable.
-- Do preserve a single live quote beside desktop controls and below mobile controls.
+- Do keep one live quote always in view: the quote pill in the top bar opens the full breakdown on every editing screen (it replaced the side panel so wide tables get the full width).
 - Do align monetary columns and use tabular numerals.
 - Do retain labels, visible focus, and independent table scrolling.
 - Do distinguish editable assumptions from sourced prices.
