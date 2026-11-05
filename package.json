@@ -1,0 +1,10 @@
+{
+  "name": "crew-table",
+  "private": true,
+  "type": "module",
+  "description": "Festival crew catering calculator and client quotes",
+  "scripts": {
+    "test": "node test.mjs && node --check dist/app.mjs",
+    "dev": "python3 -m http.server 8000 --directory dist"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  // Crew Table: static site on Cloudflare Workers (static assets, no backend).
+  "name": "crew-table",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist"
+  }
+}
