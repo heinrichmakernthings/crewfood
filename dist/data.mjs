@@ -1,5 +1,5 @@
 export const DEFAULT = {
-  "version": 3,
+  "version": 4,
   "name": "Festival crew catering",
   "ingredients": [
     {
@@ -1579,30 +1579,30 @@ export const DEFAULT = {
     },
     {
       "id": 18,
-      "name": "Hot drinks allowance",
+      "name": "Hot drinks",
       "type": "Extra",
-      "note": "Per person-day: 3 coffees + 2 teas",
+      "note": "Per cup of tea or coffee, with milk and sugar (about 60% coffee)",
       "weight": 0,
       "lines": [
         {
           "ingredient": 32,
-          "qty": 0.006
+          "qty": 0.0012
         },
         {
           "ingredient": 33,
-          "qty": 2
+          "qty": 0.4
         },
         {
           "ingredient": 19,
-          "qty": 0.15
+          "qty": 0.03
         },
         {
           "ingredient": 20,
-          "qty": 0.05
+          "qty": 0.01
         },
         {
           "ingredient": 22,
-          "qty": 0.02
+          "qty": 0.004
         }
       ],
       "key": "drinks",
@@ -1825,9 +1825,9 @@ export const DEFAULT = {
     "oncost": 15,
     "salads": 1,
     "fruit": 2,
-    "drinks": 1,
+    "drinks": 5,
     "disposables": 0.18,
-    "cups": 0.25,
+    "cups": 0.05,
     "daily": 15,
     "cereal": 0.5,
     "gas": 0.1,
@@ -1897,7 +1897,7 @@ export const DEFAULT = {
       "name": "Hot water urn",
       "fuel": "electric",
       "kw": 3,
-      "perHour": 40,
+      "perHour": 200,
       "hours": 8
     }
   ],

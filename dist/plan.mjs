@@ -3,7 +3,7 @@ import {DEFAULT} from './data.mjs';
 import {CLIENT_DEFAULT} from './reports.mjs';
 
 export function validate(s){
- if(!s||s.version!==3||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
+ if(!s||s.version!==4||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
  const finite=(n,min=0,max=1e7)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
  const short=v=>typeof v==='string'&&v.length<=500;
  if(!short(s.name)||s.ingredients.length<1||s.ingredients.length>300||s.overheads.length>100)throw Error('Check the event name and plan size.');
@@ -36,7 +36,9 @@ export function validate(s){
 
 // Older plans (version 1 and 2) have a different menu. Keep the user's event, crew, prices and overheads; use the current menu.
 export function migrate(s) {
-  if (!s || (s.version !== 1 && s.version !== 2)) return s;
+  if (!s || typeof s !== 'object') return s;
+  if (s.version === 3) return migrate3(s);
+  if (s.version !== 1 && s.version !== 2) return s;
   const v1 = s.version === 1, keep = v1 ? 36 : 51;
   const n = structuredClone(DEFAULT);
   if (typeof s.name === 'string') n.name = s.name;
@@ -61,8 +63,28 @@ export function migrate(s) {
     });
   }
   n.settings = {...n.settings, ...(s.settings || {})};
+  // Older plans measured hot drinks as an allowance (1 = 5 drinks) and cups per allowance. Now it is per drink.
+  if (s.settings && Number.isFinite(s.settings.drinks)) n.settings.drinks = s.settings.drinks * 5;
+  if (s.settings && Number.isFinite(s.settings.cups)) n.settings.cups = s.settings.cups / 5;
   if (!v1 && s.options) n.options = s.options;
   if (Array.isArray(s.overheads)) n.overheads = s.overheads;
   if (s.client) n.client = s.client;
+  return n;
+}
+
+// Version 3 plans: hot drinks moved from an allowance (1 = 3 coffees + 2 teas) to drinks per person per day.
+function migrate3(s) {
+  const n = structuredClone(s);
+  n.version = 4;
+  if (n.settings && Number.isFinite(n.settings.drinks)) n.settings.drinks *= 5;
+  if (n.settings && Number.isFinite(n.settings.cups)) n.settings.cups /= 5;
+  const r = Array.isArray(n.recipes) ? n.recipes[18] : null;
+  if (r && r.key === 'drinks') {
+    const d = DEFAULT.recipes[18];
+    r.name = d.name;
+    r.note = d.note;
+    r.lines = d.lines.map(l => ({...l}));
+  }
+  if (Array.isArray(n.equipment)) n.equipment.forEach(e => { if (e.key === 'urn' && e.perHour === 40) e.perHour = 200; });
   return n;
 }

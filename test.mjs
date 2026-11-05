@@ -30,7 +30,7 @@ for(const k of ['drinks','fruit','cereal','salads']){const off=structuredClone(s
 const noCereal=structuredClone(st);noCereal.options.cereal=false;assert.equal(calculate(noCereal).servings[19],0);
 const two=calculate(st,'two');assert.equal(two.servings[19],0,'no cereal when breakfast is not served');
 const old={version:1,name:'Old plan',ingredients:st.ingredients.filter(i=>i.id<=36),recipes:Array(13).fill({}),phases:st.phases.map(p=>({...p,groups:p.groups.map(g=>({...g,extras:false})),staff:p.staff.map(r=>r.name==='Lead cook'?{...r,rate:22}:r.name==='Cook'?{...r,rate:18}:r)})),settings:(({cereal,...x})=>x)(st.settings),overheads:st.overheads};
-const m=migrate(old);validate(m);assert.equal(m.version,3);assert.equal(m.name,'Old plan');assert.equal(m.phases[0].staff[0].rate,17);assert.ok(m.phases[0].groups.every(g=>g.extras));assert.equal(m.recipes.length,20);
+const m=migrate(old);validate(m);assert.equal(m.version,4);assert.equal(m.name,'Old plan');assert.equal(m.phases[0].staff[0].rate,17);assert.ok(m.phases[0].groups.every(g=>g.extras));assert.equal(m.recipes.length,20);
 const v2=structuredClone(st);delete v2.options;v2.recipes.forEach(r=>delete r.phases);validate(v2);assert.equal(v2.options.cereal,true);assert.deepEqual(v2.recipes[0].phases,[true,true,true]);
 }
 console.log('menu v2 tests passed');
@@ -47,7 +47,7 @@ const noBuild=structuredClone(st);noBuild.phases[0].days=0;assert.ok(calculate(n
 const allElec=structuredClone(st);allElec.equipment.forEach(e=>e.fuel='electric');const ae=calculate(allElec);assert.equal(ae.energyTotals.gasKwh,0);assert.ok(Math.abs(ae.energyTotals.cost-c0.energyTotals.allElectric)<1e-6);
 const none=structuredClone(st);none.recipes.forEach(r=>{r.equipment=r.equipment.filter(k=>k!=='fryer')});const nf=calculate(none).energy.find(e=>e.key==='fryer');assert.equal(nf.units,0);assert.equal(nf.kwh,0);
 const old2=structuredClone(st);old2.version=2;delete old2.equipment;['gas','electric','serviceHours','load'].forEach(k=>delete old2.settings[k]);old2.recipes.forEach(r=>delete r.equipment);old2.recipes[10].name='Chicken and potato traybake';old2.recipes[0].weight=77;old2.name='Kept name';
-const m2=migrate(old2);validate(m2);assert.equal(m2.version,3);assert.equal(m2.name,'Kept name');assert.equal(m2.recipes[0].weight,77);assert.equal(m2.recipes[10].name,'Fried chicken and fries');assert.ok(m2.equipment.length===4);
+const m2=migrate(old2);validate(m2);assert.equal(m2.version,4);assert.equal(m2.name,'Kept name');assert.equal(m2.recipes[0].weight,77);assert.equal(m2.recipes[10].name,'Fried chicken and fries');assert.ok(m2.equipment.length===4);
 const v3old=structuredClone(st);delete v3old.equipment;['gas','electric','serviceHours','load'].forEach(k=>delete v3old.settings[k]);v3old.recipes.forEach(r=>delete r.equipment);validate(v3old);assert.ok(v3old.recipes[0].equipment.includes('grill'));
 const bad=structuredClone(st);bad.recipes[0].equipment=['oven'];assert.throws(()=>validate(bad));
 }
@@ -107,3 +107,21 @@ const bad=structuredClone(st);bad.optionStages.fruit=[true,true];assert.throws((
 const bad2=structuredClone(st);bad2.optionStages.salads=[1,1,1];assert.throws(()=>validate(bad2));
 }
 console.log('granular option tests passed');
+// Hot drinks: a simple number of drinks per person per day
+{const st=structuredClone(DEFAULT),c0=calculate(st);
+assert.equal(st.settings.drinks,5);assert.equal(st.recipes[18].name,'Hot drinks');
+assert.equal(Math.round(c0.servings[18]),Math.round(c0.pd*5),'one serving per drink');
+const six=structuredClone(st);six.settings.drinks=6;assert.ok(Math.abs(calculate(six).servings[18]-c0.servings[18]*1.2)<1e-6,'scales with the number of drinks');
+const zero=structuredClone(st);zero.settings.drinks=0;assert.equal(calculate(zero).servings[18],0);
+assert.ok(c0.recipeCosts[18]>0.05&&c0.recipeCosts[18]<0.12,'about 7p a cup');
+const cups=structuredClone(st);cups.settings.cups=0.1;assert.ok(calculate(cups).consumables>c0.consumables,'cup cost per drink');
+assert.ok(Math.abs(c0.price-27249.474)<0.01,'same price as the old allowance model');
+// upgrade from version 3 (drinks was an allowance, 1 = 5 drinks; cups was per allowance)
+const v3=structuredClone(st);v3.version=3;v3.settings.drinks=1;v3.settings.cups=0.25;v3.recipes[18]={...v3.recipes[18],name:'Hot drinks allowance',lines:[{ingredient:32,qty:0.006},{ingredient:33,qty:2},{ingredient:19,qty:0.15},{ingredient:20,qty:0.05},{ingredient:22,qty:0.02}]};v3.equipment.find(e=>e.key==='urn').perHour=40;
+const m=migrate(v3);validate(m);assert.equal(m.version,4);assert.equal(m.settings.drinks,5);assert.ok(Math.abs(m.settings.cups-0.05)<1e-12);assert.equal(m.recipes[18].name,'Hot drinks');
+assert.ok(Math.abs(calculate(m).price-c0.price)<0.01,'upgrading does not change the price');
+const v3b=structuredClone(v3);v3b.settings.drinks=2;const mb=migrate(v3b);assert.equal(mb.settings.drinks,10,'an edited allowance is converted');
+// older versions are converted too
+const v2=structuredClone(v3);v2.version=2;delete v2.equipment;['gas','electric','serviceHours','load'].forEach(k=>delete v2.settings[k]);v2.recipes.forEach(r=>delete r.equipment);const m2=migrate(v2);validate(m2);assert.equal(m2.settings.drinks,5);
+}
+console.log('hot drinks tests passed');
