@@ -11,6 +11,8 @@ export function validate(s){
  for(const[k,v]of Object.entries(CLIENT_DEFAULT)){const x=s.client[k];if(typeof x!==typeof v||(typeof v==='string'&&x.length>2000)||(typeof v==='number'&&!finite(x,0,3650)))throw Error('Check the client quote details.');}
  s.options={...DEFAULT.options,...(s.options&&typeof s.options==='object'?s.options:{})};
  for(const k of Object.keys(DEFAULT.options))if(typeof s.options[k]!=='boolean')throw Error('Check the client options.');
+ s.kit={...DEFAULT.kit,...(s.kit&&typeof s.kit==='object'?s.kit:{})};
+ if(typeof s.kit.energy!=='boolean'||typeof s.kit.fee!=='boolean'||!finite(s.kit.feeAmount,0,1e6)||!['day','event'].includes(s.kit.feeBasis))throw Error('Check the kit charges.');
  for(const r of s.recipes){if(r.phases===undefined)r.phases=[true,true,true];if(!Array.isArray(r.phases)||r.phases.length!==3||r.phases.some(x=>typeof x!=='boolean'))throw Error('Check which stages each recipe is served in.');if(r.type==='Extra'&&r.key!==DEFAULT.recipes[r.id].key)throw Error('Invalid recipe details.');}
  for(const k of ['gas','electric','serviceHours','load'])if(s.settings[k]===undefined)s.settings[k]=DEFAULT.settings[k];
  if(s.equipment===undefined)s.equipment=structuredClone(DEFAULT.equipment);

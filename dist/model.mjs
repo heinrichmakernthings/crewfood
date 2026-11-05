@@ -1,6 +1,6 @@
 export const sum=a=>a.reduce((s,v)=>s+v,0);
 export function calculate(s,mode='mixed'){
- const t=s.settings, opt={fruit:true,drinks:true,cereal:true,salads:true,...(s.options||{})}, onIn=(r,pi)=>!r.phases||r.phases[pi]!==false, waste=1+t.waste/100, ing=new Map(s.ingredients.map(i=>[i.id,i]));
+ const t=s.settings, kit={energy:true,fee:false,feeAmount:0,feeBasis:'day',...(s.kit||{})}, opt={fruit:true,drinks:true,cereal:true,salads:true,...(s.options||{})}, onIn=(r,pi)=>!r.phases||r.phases[pi]!==false, waste=1+t.waste/100, ing=new Map(s.ingredients.map(i=>[i.id,i]));
  const unit=i=>i.price/(i.pack*i.yield);
  const recipeCosts=s.recipes.map(r=>sum(r.lines.map(l=>l.qty*unit(ing.get(l.ingredient))))*waste);
  const breakfast=s.recipes.filter(r=>r.type==='Breakfast'), mains=s.recipes.filter(r=>r.type==='Main');
@@ -20,7 +20,7 @@ export function calculate(s,mode='mixed'){
    portions.forEach((v,i)=>{servings[i]+=v;phaseServ[pi][i]+=v;});
    const f=sum(portions.map((v,i)=>v*recipeCosts[i]));
    const c=(b+m)*t.disposables+(g.extras&&opt.drinks?days*t.drinks*t.cups:0);
-   groups.push({pi,gi,name:g.name,pd:days,meals:b+m,breakfast:b,mains:m,food:f,consumables:c,labour:phasePD?staff*days/phasePD:0,daily:phasePD?p.days*t.daily*days/phasePD:0});
+   groups.push({portions,pi,gi,name:g.name,pd:days,meals:b+m,breakfast:b,mains:m,food:f,consumables:c,labour:phasePD?staff*days/phasePD:0,daily:phasePD?p.days*t.daily*days/phasePD:0});
    pd+=days;meals+=b+m;food+=f;consumables+=c;
   }
   phaseCosts.push({name:p.name,days:p.days,people:sum(p.groups.map(g=>g.people)),pd:phasePD,labour:staff});
@@ -39,11 +39,12 @@ export function calculate(s,mode='mixed'){
  const energyTotals={kwh:sum(energy.map(e=>e.kwh)),cost:sum(energy.map(e=>e.cost)),gasKwh:sum(energy.filter(e=>e.fuel==='gas').map(e=>e.kwh)),gasCost:sum(energy.filter(e=>e.fuel==='gas').map(e=>e.cost)),elecKwh:sum(energy.filter(e=>e.fuel!=='gas').map(e=>e.kwh)),elecCost:sum(energy.filter(e=>e.fuel!=='gas').map(e=>e.cost))};
  energyTotals.allGas=energyTotals.kwh*t.gas;energyTotals.allElectric=energyTotals.kwh*t.electric;
  const purchased=sum(shopping.map(i=>i.spend)),uplift=purchased-food,fixed=sum(s.overheads.map(o=>o.cost)),daily=sum(s.phases.map(p=>p.days))*t.daily;
- const base=purchased+labour+consumables+fixed+daily,contingency=base*t.contingency/100,cost=base+contingency,price=cost/(1-t.margin/100),profit=price-cost;
- groups=groups.map(g=>{const allocated=g.food+g.consumables+g.labour+g.daily+(pd?fixed*g.pd/pd:0)+(food?uplift*g.food/food:0);const cost=allocated*(1+t.contingency/100);return {...g,cost,price:cost/(1-t.margin/100)};});
+ const totalDays=sum(s.phases.map(p=>p.days)),energyCharge=kit.energy?energyTotals.cost:0,kitFee=kit.fee?(kit.feeBasis==='event'?kit.feeAmount:kit.feeAmount*totalDays):0;
+ const base=purchased+labour+consumables+fixed+daily+energyCharge,contingency=base*t.contingency/100,cost=base+contingency,price=cost/(1-t.margin/100)+kitFee,profit=price-cost;
+ groups=groups.map(g=>{const energyShare=kit.energy?sum(g.portions.map((v,i)=>servings[i]>0?v*recipeEnergy[i].cost/servings[i]:0)):0,allocated=g.food+g.consumables+g.labour+g.daily+energyShare+(pd?fixed*g.pd/pd:0)+(food?uplift*g.food/food:0);const cost=allocated*(1+t.contingency/100);return {...g,cost,price:cost/(1-t.margin/100)};});
  phaseCosts=phaseCosts.map((p,pi)=>({...p,cost:sum(groups.filter(g=>g.pi===pi).map(g=>g.cost)),price:sum(groups.filter(g=>g.pi===pi).map(g=>g.price))}));
- const unallocated=price-sum(groups.map(g=>g.price));
+ const unallocated=price-kitFee-sum(groups.map(g=>g.price));
  s.recipes.forEach((r,i)=>{if(servings[i]>0&&!r.lines.some(l=>l.qty>0))errors.push(r.name+' has portions but no ingredients. Add ingredient quantities or set its menu weight / daily allowance to zero.');});
- if(errors.length)return {energy,energyTotals,recipeEnergy,recipeCosts,servings,groups:groups.map(g=>({...g,cost:NaN,price:NaN})),phaseCosts:phaseCosts.map(p=>({...p,cost:NaN,price:NaN})),pd,meals,food:NaN,purchased:NaN,uplift:NaN,labour,consumables,fixed,daily,base:NaN,contingency:NaN,cost:NaN,price:NaN,profit:NaN,shopping,unallocated:NaN,errors};
- return {energy,energyTotals,recipeEnergy,recipeCosts,servings,groups,phaseCosts,pd,meals,food,purchased,uplift,labour,consumables,fixed,daily,base,contingency,cost,price,profit,shopping,unallocated,errors};
+ if(errors.length)return {energyCharge:NaN,kitFee,kit,energy,energyTotals,recipeEnergy,recipeCosts,servings,groups:groups.map(g=>({...g,cost:NaN,price:NaN})),phaseCosts:phaseCosts.map(p=>({...p,cost:NaN,price:NaN})),pd,meals,food:NaN,purchased:NaN,uplift:NaN,labour,consumables,fixed,daily,base:NaN,contingency:NaN,cost:NaN,price:NaN,profit:NaN,shopping,unallocated:NaN,errors};
+ return {energyCharge,kitFee,kit,energy,energyTotals,recipeEnergy,recipeCosts,servings,groups,phaseCosts,pd,meals,food,purchased,uplift,labour,consumables,fixed,daily,base,contingency,cost,price,profit,shopping,unallocated,errors};
 }

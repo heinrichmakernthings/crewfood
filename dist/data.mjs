@@ -1900,5 +1900,11 @@ export const DEFAULT = {
       "perHour": 40,
       "hours": 8
     }
-  ]
+  ],
+  "kit": {
+    "energy": true,
+    "fee": false,
+    "feeAmount": 100,
+    "feeBasis": "day"
+  }
 };

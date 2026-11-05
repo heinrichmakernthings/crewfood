@@ -46,10 +46,39 @@ assert.ok(c0.energy.every(e=>e.units>=1),'every kit item is used by default');
 const noBuild=structuredClone(st);noBuild.phases[0].days=0;assert.ok(calculate(noBuild).energy.find(e=>e.key==='fryer').kwh<by('fryer').kwh);
 const allElec=structuredClone(st);allElec.equipment.forEach(e=>e.fuel='electric');const ae=calculate(allElec);assert.equal(ae.energyTotals.gasKwh,0);assert.ok(Math.abs(ae.energyTotals.cost-c0.energyTotals.allElectric)<1e-6);
 const none=structuredClone(st);none.recipes.forEach(r=>{r.equipment=r.equipment.filter(k=>k!=='fryer')});const nf=calculate(none).energy.find(e=>e.key==='fryer');assert.equal(nf.units,0);assert.equal(nf.kwh,0);
-assert.equal(calculate(st).price,c0.price,'energy is not added to the quote');
 const old2=structuredClone(st);old2.version=2;delete old2.equipment;['gas','electric','serviceHours','load'].forEach(k=>delete old2.settings[k]);old2.recipes.forEach(r=>delete r.equipment);old2.recipes[10].name='Chicken and potato traybake';old2.recipes[0].weight=77;old2.name='Kept name';
 const m2=migrate(old2);validate(m2);assert.equal(m2.version,3);assert.equal(m2.name,'Kept name');assert.equal(m2.recipes[0].weight,77);assert.equal(m2.recipes[10].name,'Fried chicken and fries');assert.ok(m2.equipment.length===4);
 const v3old=structuredClone(st);delete v3old.equipment;['gas','electric','serviceHours','load'].forEach(k=>delete v3old.settings[k]);v3old.recipes.forEach(r=>delete r.equipment);validate(v3old);assert.ok(v3old.recipes[0].equipment.includes('grill'));
 const bad=structuredClone(st);bad.recipes[0].equipment=['oven'];assert.throws(()=>validate(bad));
 }
 console.log('equipment tests passed');
+// Kit we own: charge gas & electric into the cost, and/or an equipment fee
+{const st=structuredClone(DEFAULT),c0=calculate(st),cont=1+st.settings.contingency/100,mar=1-st.settings.margin/100;
+assert.equal(st.kit.energy,true);assert.equal(st.kit.fee,false);
+assert.ok(Math.abs(c0.energyCharge-c0.energyTotals.cost)<1e-9,'energy is charged by default');
+const off=structuredClone(st);off.kit.energy=false;const co=calculate(off);
+assert.equal(co.energyCharge,0);assert.ok(Math.abs((c0.price-co.price)-c0.energyCharge*cont/mar)<1e-6,'energy carries contingency and margin');
+assert.ok(Math.abs((c0.cost-co.cost)-c0.energyCharge*cont)<1e-6);
+assert.ok(Math.abs(sum(c0.groups.map(g=>g.price))-c0.price)<1e-6,'group prices add up with energy in');
+const days=sum(st.phases.map(p=>p.days));
+const fee=structuredClone(st);fee.kit.fee=true;fee.kit.feeAmount=120;const cf=calculate(fee);
+assert.equal(cf.kitFee,120*days);assert.ok(Math.abs(cf.price-(c0.price+120*days))<1e-6,'fee is added after margin');assert.ok(Math.abs(cf.profit-(c0.profit+120*days))<1e-6);assert.equal(cf.cost,c0.cost,'fee is not a cost');
+assert.ok(Math.abs(sum(cf.groups.map(g=>g.price))+cf.kitFee-cf.price)<1e-6);assert.ok(Math.abs(cf.unallocated)<1e-6);
+const ev=structuredClone(fee);ev.kit.feeBasis='event';ev.kit.feeAmount=900;assert.equal(calculate(ev).kitFee,900);
+const bothOff=structuredClone(st);bothOff.kit.energy=false;assert.equal(calculate(bothOff).kitFee,0);
+const z=structuredClone(fee);z.phases.forEach(p=>p.days=0);assert.equal(calculate(z).kitFee,0,'no days, no per-day fee');
+// energy follows the food: burgers and fried chicken sit in stages that serve them
+const build=calculate(st).groups.filter(g=>g.pi===0),live=calculate(st).groups.filter(g=>g.pi===1);
+assert.ok(build.length&&live.length);
+// client quote: fee is its own row and rows add up to the total
+const t2=calculate(fee,'two'),t3=calculate(fee,'three'),q=clientQuote(fee,cf,t2,t3);
+assert.equal(q.fee,120*days);assert.ok(Math.abs(sum(q.phases.map(p=>p.price))+q.fee-q.net)<1e-9,'stages + fee = total');
+const html=renderClientQuote(fee,cf,t2,t3,{esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n)),today:'2026-11-05'});
+assert.ok(html.includes('Kitchen equipment fee')&&!html.toLowerCase().includes('gas'),'client sees the fee line, never our gas costs');
+assert.ok(!renderClientQuote(st,c0,calculate(st,'two'),calculate(st,'three'),{esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n)),today:'2026-11-05'}).includes('Kitchen equipment fee'));
+// plans without kit settings get defaults; bad values are refused
+const old=structuredClone(st);delete old.kit;validate(old);assert.deepEqual(old.kit,DEFAULT.kit);
+const bad=structuredClone(st);bad.kit.feeBasis='week';assert.throws(()=>validate(bad));
+const bad2=structuredClone(st);bad2.kit.feeAmount=-5;assert.throws(()=>validate(bad2));
+}
+console.log('kit charge tests passed');
