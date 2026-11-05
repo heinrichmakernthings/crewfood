@@ -22,7 +22,7 @@ const imports = [...read('app.mjs').matchAll(/from '\.\/([^']+)'/g)].map(m => m[
 for (const m of imports) assert.ok(files.includes(m), m + ' is imported by the app but not cached for offline');
 for (const f of ['app.mjs', 'style.css', 'manifest.webmanifest']) assert.ok(html.includes(f), 'index.html links ' + f);
 assert.ok(files.includes('app.mjs') && files.includes('style.css') && files.includes('index.html'));
-for (const v of ['dashboard', 'plan', 'recipes', 'equipment', 'costs', 'shopping', 'reports']) {
+for (const v of ['dashboard', 'plan', 'pay', 'recipes', 'equipment', 'costs', 'shopping', 'reports']) {
   assert.ok(html.includes(`data-view="${v}"`), 'nav has ' + v);
 }
 console.log('pwa tests passed');
