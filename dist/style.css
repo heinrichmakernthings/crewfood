@@ -173,3 +173,36 @@ small.warn,.warn{color:#9b3724}small.warn{font-size:11px}
 .rota-people td{vertical-align:middle}.rota-people input.name{width:150px}.rota-people select{max-width:170px}.rota-people .chips{flex-wrap:nowrap}.rota-people .chip span{min-height:30px;padding:3px 10px;font-size:12px}
 @media(max-width:700px){.rota-row{grid-template-columns:repeat(3,minmax(0,1fr))}.rota-who{grid-column:1/-1;flex-direction:row;align-items:baseline;gap:8px}.rota-hours{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:baseline}.rota-who small{font-size:12px}}
 @media print{.day-chips,.rota-actions,.rota-apply{display:none!important}}
+
+/* Branding and approval on the quote sheet */
+.rp-logo{display:block;max-height:56px;max-width:230px;width:auto;height:auto}
+.rp-approve{break-inside:avoid}.rp-sign{display:grid;grid-template-columns:1fr 1fr;gap:26px 28px;margin-top:22px}.rp-sign div{border-bottom:1px solid var(--ink);min-height:30px;display:flex;align-items:flex-end}.rp-sign span{font-size:11px;color:var(--muted);padding-bottom:3px;letter-spacing:.04em;text-transform:uppercase}
+.rp-foot{margin-top:30px;padding-top:12px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);text-align:center}
+
+/* Saved quotes, save dialog, branding panel */
+#save-quote.dirty::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#e8aa56;margin-left:8px;vertical-align:middle}
+dialog#save-dialog{border:0;border-radius:16px;padding:0;width:min(440px,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.28);color:var(--ink);background:#fff}
+dialog#save-dialog::backdrop{background:rgba(20,30,28,.45)}
+#save-form{display:flex;flex-direction:column;gap:14px;padding:24px}#save-form h2{margin:0}#save-form p{margin:0;font-size:14px}
+.dlg-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
+.rep-actions{display:flex;gap:10px;flex-wrap:wrap}
+.q-list{display:grid;gap:12px}
+.q-card{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:16px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.q-card.current{border-color:var(--green);background:#f1f6f1}
+.q-main{display:flex;flex-direction:column;gap:2px;min-width:0}.q-main b{font-size:17px;overflow-wrap:anywhere}.q-main span{color:var(--muted);font-size:14px;overflow-wrap:anywhere}.q-main small,.q-num small{font-size:12px;color:var(--muted)}
+.q-num{display:flex;flex-direction:column;gap:2px}.q-num strong{font-size:20px;font-variant-numeric:tabular-nums}
+.q-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+button.danger{background:#fff0e8;border-color:#e0b4a8;color:#9b3724}
+.empty-state{background:#fff;border:1px dashed var(--line);border-radius:14px;padding:32px;text-align:center}.empty-state p{margin:6px 0 0}
+.logo-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:6px 0 14px}.logo-prev{max-height:48px;max-width:180px;border:1px solid var(--line);border-radius:8px;padding:6px;background:#fff}
+.file-btn{display:inline-flex;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;position:relative;overflow:hidden}.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;font-size:0}
+.rf input[type=color]{width:64px;height:40px;padding:2px}
+@media(max-width:700px){.q-card{grid-template-columns:1fr}.q-actions{justify-content:flex-start}}
+@media(max-width:899px){
+ .appbar{flex-wrap:wrap}
+ .appbar-actions{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .appbar-actions>*{min-width:0}.appbar-actions button,.appbar-actions summary{width:100%;text-align:center;white-space:nowrap}
+ .file-menu>div{right:0;left:auto}
+}
+@media print{#save-dialog{display:none!important}.rep-actions{display:none!important}}
+#save-form input:invalid{border-color:#b9c4bc;background:#fff}

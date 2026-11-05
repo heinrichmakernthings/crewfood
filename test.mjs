@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {DEFAULT} from './dist/data.mjs';import {validate,migrate} from './dist/plan.mjs';import{calculate,sum}from'./dist/model.mjs';
 let s=structuredClone(DEFAULT),c=calculate(s);assert.equal(c.pd,1150);assert.equal(c.meals,3450);assert.ok(Math.abs(sum(c.groups.map(g=>g.price))-c.price)<1e-7);assert.ok(Math.abs(c.profit/c.price-.25)<1e-9);assert.equal(c.errors.length,0);
@@ -188,4 +189,48 @@ assert.equal((html.match(/data-rota=/g)||[]).length,5*3,'5 people on site in Liv
 assert.ok(html.includes('Day 1')&&html.includes('Breakfast')&&html.includes('6am to 10am')&&html.includes('Use this rota in the quote'));
 const none=structuredClone(st);none.phases[1].days=0;assert.ok(R.renderRota(none,calculate(none),{phase:1,day:0,tabs:''},{esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n))}).includes('has no days'));
 console.log('rota tests passed');
+});
+// Branding, saved quotes and the PDF
+Promise.all([import('./dist/brand.mjs'),import('./dist/quotes.mjs'),import('./dist/pdf.mjs'),import('./dist/vendor/jspdf.umd.min.js')]).then(([B,Q,P])=>{
+const {jsPDF}=globalThis.jspdf;
+// brand
+assert.deepEqual(B.cleanBrand(null),B.BRAND_DEFAULT);assert.equal(B.cleanBrand({colour:'red'}).colour,B.BRAND_DEFAULT.colour);assert.equal(B.cleanBrand({colour:'#ABCDEF'}).colour,'#abcdef');
+assert.equal(B.cleanBrand({company:'   '}).company,'Crew Table');assert.equal(B.cleanBrand({company:'x'.repeat(200)}).company.length,80);
+const png='data:image/png;base64,iVBORw0KGgo=';assert.equal(B.cleanBrand({logo:png,logoRatio:3}).logo,png);assert.equal(B.cleanBrand({logo:'data:text/html;base64,AAAA',logoRatio:3}).logo,'','only images');assert.equal(B.cleanBrand({logo:'javascript:alert(1)',logoRatio:3}).logo,'');assert.equal(B.cleanBrand({logo:png}).logo,'','a logo needs its shape');assert.equal(B.cleanBrand({logo:'data:image/png;base64,'+'A'.repeat(B.LOGO_MAX_CHARS),logoRatio:3}).logo,'','too big');
+assert.equal(B.tint('#000000',0.5),'#808080');assert.equal(B.tint('#245946',1),'#ffffff');assert.equal(B.contrastText('#245946'),'#ffffff');assert.equal(B.contrastText('#f2c14e'),'#1f2a2d');
+// saved quotes
+const st=structuredClone(DEFAULT);st.client={...CLIENT_DEFAULT,clientName:'Wildfield'};const t0=Date.parse('2026-11-05T10:00:00Z');
+let lib=Q.emptyLibrary();const r1=Q.saveQuote(lib,st,{id:null,now:t0,rand:0.5});assert.equal(r1.lib.quotes.length,1);assert.equal(r1.entry.client,'Wildfield');assert.equal(r1.entry.event,st.name);
+st.name='Changed after saving';assert.equal(r1.entry.plan.name,'Festival crew catering','a saved quote is a copy');
+const r2=Q.saveQuote(r1.lib,st,{id:r1.entry.id,now:t0+60000,rand:0.1});assert.equal(r2.lib.quotes.length,1,'saving again updates');assert.equal(r2.entry.id,r1.entry.id);assert.equal(r2.lib.quotes[0].plan.name,'Changed after saving');
+const r3=Q.saveQuote(r2.lib,st,{id:'gone',now:t0+120000,rand:0.9});assert.equal(r3.lib.quotes.length,2,'an unknown id adds a new quote');assert.notEqual(r3.entry.id,'gone');
+const d=Q.duplicateQuote(r3.lib,r1.entry.id,{now:t0+180000,rand:0.3});assert.equal(d.lib.quotes.length,3);assert.ok(d.entry.event.endsWith('(copy)'));assert.equal(d.entry.plan.client.reference,'');assert.notEqual(d.entry.id,r1.entry.id);assert.equal(Q.duplicateQuote(d.lib,'nope',{now:t0,rand:0}).entry,null);
+assert.equal(Q.deleteQuote(d.lib,d.entry.id).quotes.length,2);
+assert.equal(Q.newestFirst(d.lib)[0].id,d.entry.id,'newest first');assert.equal(Q.searchQuotes(d.lib,'WILD').length,3);assert.equal(Q.searchQuotes(d.lib,'copy').length,1);assert.equal(Q.searchQuotes(d.lib,'zzz').length,0);
+const inc={quotes:[{...r1.entry,savedAt:'2030-01-01T00:00:00.000Z',event:'Newer'},{...d.entry,id:'q-brand-new'}]};const mg=Q.mergeLibrary(r1.lib,inc);assert.equal(mg.added,1);assert.equal(mg.updated,1);assert.equal(mg.lib.quotes.length,2);assert.equal(Q.mergeLibrary(mg.lib,{quotes:[{...r1.entry,savedAt:'2000-01-01T00:00:00.000Z'}]}).updated,0,'older saves do not overwrite');
+assert.equal(Q.cleanLibrary({quotes:[{id:'ok',plan:{}},{id:'ok',plan:{}},{id:'bad id!',plan:{}},{id:'noplan'},null,'x']}).quotes.length,1,'bad entries are dropped');assert.equal(Q.cleanLibrary('junk').quotes.length,0);
+assert.equal(Q.backupFile(lib,B.BRAND_DEFAULT).type,'crew-table-quotes');assert.equal(Q.displayName({client:'',event:'E'}),'E');assert.equal(Q.displayName({client:'',event:''}),'Untitled quote');
+assert.equal(Q.agoText('2026-11-05T10:00:00Z',t0+20000),'just now');assert.equal(Q.agoText('2026-11-05T10:00:00Z',t0+5*60000),'5 min ago');assert.equal(Q.agoText('2026-11-05T10:00:00Z',t0+3*3600000),'3 hrs ago');assert.equal(Q.agoText('2026-11-05T10:00:00Z',t0+86400000),'1 day ago');
+// PDF
+class Raw extends jsPDF{constructor(o){super({...o,compress:false});}}
+const pdf=(mut,brand={})=>{const s=structuredClone(DEFAULT);s.client={...CLIENT_DEFAULT,clientName:'Wildfield Festival Ltd',reference:'Q-9'};validate(s);if(mut)mut(s);const c=calculate(s);const doc=P.buildQuotePdf(Raw,s,c,calculate(s,'two'),calculate(s,'three'),brand,'2026-11-05');return {doc,raw:Buffer.from(doc.output('arraybuffer')).toString('latin1'),c,s};};
+let a=pdf();assert.ok(a.doc.getNumberOfPages()>=1&&a.doc.getNumberOfPages()<=2,'one or two pages');assert.ok(a.raw.startsWith('%PDF-'));
+for(const t of ['Wildfield Festival Ltd','Q-9','Total to pay',(()=>{const net=Math.round(a.c.price*100)/100,vat=Math.round(net*0.2*100)/100;return (Math.round((net+vat)*100)/100).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});})(),'Bacon bap','Beef burger and fries \\(Build only\\)','APPROVAL','SIGNATURE','Page 1 of '+a.doc.getNumberOfPages()])assert.ok(a.raw.includes(t),'pdf has '+t);
+assert.ok(!a.raw.includes('Kitchen equipment fee'),'no fee line unless charged');assert.ok(!/gas|electric|profit|margin|contingency|labour/i.test(a.raw.replace(/\/[A-Za-z]+/g,'')),'client PDF shows no costs, energy or profit');
+const fee=pdf(s=>{s.kit.fee=true;s.kit.feeAmount=100});assert.ok(fee.raw.includes('Kitchen equipment fee'));
+const nv=pdf(s=>{s.client.vat=0});assert.ok(nv.raw.includes('TOTAL PRICE')&&!nv.raw.includes('VAT at'));
+const noap=pdf(s=>{s.client.showApproval=false});assert.ok(!noap.raw.includes('SIGNATURE'));
+const nomenu=pdf(s=>{s.client.showMenu=false});assert.ok(!nomenu.raw.includes('EXAMPLE MENU'));
+const opts=pdf(s=>{s.client.showOptions=true});assert.ok(opts.raw.includes('Everyone on 2 meals'));
+const long=pdf(s=>{s.client.notes='Please note the access arrangements. '.repeat(120);s.client.showOptions=true});assert.ok(long.doc.getNumberOfPages()>=2&&long.doc.getNumberOfPages()<=4,'long notes flow onto more pages');
+const real='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';const lg=pdf(null,{company:'Wild Co',colour:'#b4472a',logo:real,logoRatio:3,tagline:'Fed and ready',contact:'a@b.example',footer:'Reg 123'});assert.ok(lg.raw.includes('/Subtype /Image'),'logo embedded');assert.ok(lg.raw.includes('Fed and ready')&&lg.raw.includes('Reg 123')&&lg.raw.includes('a@b.example'));
+const broken=pdf(null,{company:'Broken Logo Co',logo:png,logoRatio:3});assert.ok(broken.raw.includes('Broken Logo Co')&&!broken.raw.includes('/Subtype /Image'),'an unreadable logo falls back to the company name');
+const light=pdf(null,{colour:'#f2c14e'});assert.ok(light.doc.getNumberOfPages()>=1);
+const wierd=pdf(s=>{s.name='Caf\u00e9 \u201CFest\u201D \u2013 \u4e2d\u6587';s.client.clientName='O\u2019Neil & Sons'});assert.ok(wierd.raw.includes("O'Neil & Sons"));assert.ok(wierd.raw.includes('Fest'));
+assert.equal(P.clean('a\u2019b \u201Cc\u201D \u2013 \u2026 \u4e2d'),"a'b \"c\" - ... ?");
+assert.equal(P.pdfFileName({client:{clientName:'Wild/field: Ltd'},name:'x'}),'Wild field Ltd - Catering quote.pdf');assert.equal(P.pdfFileName({client:{clientName:''},name:'My event'}),'My event - Catering quote.pdf');assert.ok(P.pdfFileName({client:{clientName:'x'.repeat(200)},name:'y'}).length<90);
+assert.ok(P.money(1234.5)==='£1,234.50');
+// the app loads the PDF tool from a file the service worker caches
+const appSrc=fs.readFileSync('dist/app.mjs','utf8'),swSrc=fs.readFileSync('dist/sw.js','utf8');assert.ok(appSrc.includes("vendor/jspdf.umd.min.js")&&swSrc.includes("vendor/jspdf.umd.min.js")&&fs.existsSync('dist/vendor/jspdf.LICENSE'));
+console.log('branding, quotes and pdf tests passed');
 });

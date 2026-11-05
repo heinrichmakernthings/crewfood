@@ -1,6 +1,7 @@
 // Client quote and internal costing reports.
 // Pure functions: numbers and HTML strings only. No DOM, no clock (the caller passes today's date).
 import {sum} from './model.mjs';
+import {BRAND_DEFAULT, tint} from './brand.mjs';
 
 export const CLIENT_DEFAULT = {
   company: 'Crew Table',
@@ -13,6 +14,7 @@ export const CLIENT_DEFAULT = {
   showPerPerson: true,
   showMenu: true,
   showOptions: false,
+  showApproval: true,
   notes: '',
   terms: 'Prices are for the event as described and are based on the headcounts and days above. Final numbers to be confirmed 7 days before arrival; changes after that may alter the price. Please tell us about allergies and dietary needs in advance. 50% deposit to confirm the booking, balance due after the event.'
 };
@@ -99,12 +101,13 @@ export function clientQuote(state, c, two, three) {
 
 export function renderClientQuote(state, c, two, three, h) {
   const {esc, fmt, whole, today} = h;
+  const brand = {...BRAND_DEFAULT, ...(h.brand || {})};
   const q = clientQuote(state, c, two, three), cl = q.cl;
   const date = cl.date || today;
   const row = (a, b, cls = '') => `<div class="rp-line ${cls}"><span>${a}</span><b>${b}</b></div>`;
   const list = a => a.map(x => `<li>${esc(x)}</li>`).join('');
-  return `<article class="report-sheet" id="report-sheet" aria-label="Client quote">
-<header class="rp-head"><div><div class="rp-company">${esc(cl.company)}</div><div class="rp-sub">Festival crew catering</div></div><div class="rp-meta"><div class="rp-kind">Quote</div>${cl.reference ? `<div>Ref ${esc(cl.reference)}</div>` : ''}<div>${esc(longDate(date))}</div></div></header>
+  return `<article class="report-sheet" id="report-sheet" aria-label="Client quote" style="--green:${esc(brand.colour)};--light:${tint(brand.colour, 0.88)}">
+<header class="rp-head"><div>${brand.logo ? `<img class="rp-logo" src="${esc(brand.logo)}" alt="${esc(brand.company)}">` : `<div class="rp-company">${esc(brand.company)}</div>`}${brand.tagline ? `<div class="rp-sub">${esc(brand.tagline)}</div>` : ''}</div><div class="rp-meta"><div class="rp-kind">Quote</div>${cl.reference ? `<div>Ref ${esc(cl.reference)}</div>` : ''}<div>${esc(longDate(date))}</div></div></header>
 <section class="rp-for"><div><span>Prepared for</span><b>${esc(cl.clientName || 'Client name')}</b>${cl.contact ? `<small>${esc(cl.contact)}</small>` : ''}</div><div><span>Event</span><b>${esc(state.name)}</b><small>${whole(q.days)} days of catering · ${whole(q.meals)} meals</small></div></section>
 <section class="rp-total"><div><span>${q.vatRate ? 'Total including VAT' : 'Total price'}</span><strong>${fmt(q.vatRate ? q.total : q.net)}</strong></div>${cl.showPerPerson && q.personDays ? `<div class="rp-per"><b>${fmt(q.perPersonDay)}</b> per person per day<br><b>${fmt(q.perMeal)}</b> average per meal <small>(before VAT)</small></div>` : ''}</section>
 <section><h3>Price by stage</h3><table><thead><tr><th>Stage</th><th class="numeric">Days</th><th class="numeric">People / day</th><th class="numeric">Meals</th><th class="numeric">Price</th></tr></thead><tbody>${q.phases.map(p => `<tr><td>${esc(p.name)}</td><td class="numeric">${whole(p.days)}</td><td class="numeric">${whole(p.people)}</td><td class="numeric">${whole(p.meals)}</td><td class="numeric">${fmt(p.price)}</td></tr>`).join('')}${q.fee ? `<tr><td colspan="4">Kitchen equipment fee</td><td class="numeric">${fmt(q.fee)}</td></tr>` : ''}</tbody></table>
@@ -115,6 +118,8 @@ ${cl.showMenu && (q.menu.breakfast.length || q.menu.mains.length) ? `<section cl
 ${cl.showOptions ? `<section><h3>Options</h3><table><thead><tr><th>Package</th><th class="numeric">Per person / day</th><th class="numeric">Total before VAT</th></tr></thead><tbody>${q.options.map(o => `<tr><td>${esc(o.label)}</td><td class="numeric">${fmt(o.perPersonDay)}</td><td class="numeric">${fmt(o.price)}</td></tr>`).join('')}</tbody></table></section>` : ''}
 ${cl.notes.trim() ? `<section><h3>Notes</h3><p class="rp-text">${esc(cl.notes)}</p></section>` : ''}
 <section class="rp-terms"><h3>Terms</h3><p class="rp-text">${esc(cl.terms)}</p><p class="rp-small">${q.vatRate ? '' : 'Prices exclude VAT. '}This quote is valid for ${whole(cl.validDays)} days, until ${esc(longDate(addDays(date, cl.validDays)))}.</p></section>
+${cl.showApproval ? `<section class="rp-approve"><h3>Approval</h3><p class="rp-text">Approved on behalf of ${esc(cl.clientName || 'the client')} to go ahead at the price above (${fmt(q.vatRate ? q.total : q.net)}).</p><div class="rp-sign"><div><span>Name</span></div><div><span>Position</span></div><div><span>Signature</span></div><div><span>Date</span></div></div></section>` : ''}
+${brand.contact || brand.footer ? `<footer class="rp-foot">${[brand.company, brand.contact, brand.footer].filter(Boolean).map(esc).join(' · ')}</footer>` : ''}
 </article>`;
 }
 
