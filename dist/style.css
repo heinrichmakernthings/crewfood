@@ -74,3 +74,54 @@
 @media(max-width:1050px){.energy-grid{grid-template-columns:1fr}.energy-kpis{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.energy-kpis{grid-template-columns:1fr}}
 .eq-table td input.name{width:130px}.eq-table input[type=number]{width:62px;padding:8px 6px}.eq-table td select{width:84px}.eq-table td,.eq-table th{padding:10px 8px}.eq-table th{white-space:normal;line-height:1.3}
+
+/* App shell: sidebar on desktop, bottom tab bar on phones */
+[hidden]{display:none!important}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);height:100dvh}
+@media(min-width:900px){html,body{height:100%;overflow:hidden}}
+#nav.sidenav{display:flex;flex-direction:column;gap:2px;margin:0;padding:18px 12px;border:0;border-right:1px solid var(--line);background:#fff;overflow:auto}
+#nav .brand{padding:6px 10px 18px}
+#nav button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px;border:0;border-radius:10px;background:none;color:var(--muted);font-size:15px;font-weight:600;box-shadow:none;white-space:nowrap}
+#nav button svg{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#nav button:hover{background:#f0f4ee}
+#nav button.active{background:var(--light);color:var(--green);box-shadow:none}
+#nav .short{display:none}
+.shell{overflow:auto;min-width:0;background:var(--paper)}
+.appbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 32px;background:rgba(246,245,240,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.titlebox{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px}
+#event-name{font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;letter-spacing:-.01em;padding:4px 8px;margin-left:-8px;border-radius:6px;width:100%;border:1px solid transparent;background:transparent}
+#event-name:hover{background:#fff;border-color:var(--line)}
+#save-status{font-size:12px;color:var(--muted);padding-left:0}
+.appbar-actions{display:flex;align-items:center;gap:10px;flex:none}
+.file-menu{position:relative}
+.workspace{max-width:1500px;margin:0 auto;padding:28px 32px 60px}
+.quote-sheet{top:88px}
+@media(max-width:1280px){.kpis,.opt-grid,.chart-grid{grid-template-columns:1fr 1fr}.energy-grid,.link-row{grid-template-columns:1fr}.chart-grid>:last-child:nth-child(odd){grid-column:1/-1}}
+@media(max-width:1180px){.workspace{display:flex;flex-direction:column;gap:24px}.quote-sheet{position:static}}
+@media(max-width:899px){
+ html,body{height:auto;overflow:auto}
+ .app{display:block;height:auto}
+ .shell{overflow:visible}
+ #nav.sidenav{position:fixed;left:0;right:0;bottom:0;z-index:50;flex-direction:row;justify-content:space-around;gap:0;padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));border-right:0;border-top:1px solid var(--line);overflow:visible;box-shadow:0 -4px 16px rgba(0,0,0,.05)}
+ #nav .brand{display:none}
+ #nav button{flex:1;min-width:0;flex-direction:column;justify-content:center;gap:3px;padding:7px 2px;font-size:10.5px;text-align:center;border-radius:10px}
+ #nav .long{display:none}#nav .short{display:inline}
+ .appbar{padding:10px max(16px,env(safe-area-inset-left)) 10px max(16px,env(safe-area-inset-left));top:0;padding-top:calc(10px + env(safe-area-inset-top));flex-wrap:wrap;gap:8px}
+ .appbar-actions{width:100%;justify-content:flex-start}
+ .appbar-actions button,.appbar-actions summary{padding:8px 12px;font-size:13px}
+ .workspace{padding:18px max(16px,env(safe-area-inset-left)) calc(96px + env(safe-area-inset-bottom))}
+ .quote-sheet{top:auto}
+ #toast{bottom:calc(86px + env(safe-area-inset-bottom))}
+}
+@media(max-width:640px){.kpis,.opt-grid,.chart-grid{grid-template-columns:1fr}}
+@media print{html,body{height:auto!important;overflow:visible!important}.app{display:block!important;height:auto!important}.shell{overflow:visible!important}.sidenav,.appbar{display:none!important}.workspace{padding:0!important}}
+.workspace{padding-top:20px}
+.dashboard-head .dash-actions{margin-top:2px}
+@media(max-width:899px){
+ .appbar{flex-wrap:nowrap;align-items:center}
+ .appbar-actions{width:auto}
+ #print{display:none}
+ .dashboard-head{display:block}.dashboard-head .dash-actions{margin-top:14px}
+ #save-status{font-size:11.5px}
+}
+#nav button{-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}

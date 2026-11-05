@@ -21,7 +21,16 @@ To turn the password on again:
 
 Cloudflare Zero Trust > Access (allow listed emails) is the alternative if you want named logins.
 
-## 4. Day to day
+## 4. Install it as an app
+Crew Table is an installable web app. Once the site is open:
+- **Android / Chrome / Edge on desktop:** use the **Install app** button in the top bar (or the install icon in the address bar).
+- **iPhone / iPad (Safari):** Share, then **Add to Home Screen**.
+
+It then opens in its own window with its own icon, and it works with no signal once it has loaded once. Plans still save on that device only.
+
+When you release a change, bump `CACHE` in `dist/sw.js` (for example `crew-table-v2`) so installed copies refresh right away.
+
+## 5. Day to day
 - Plans are per browser. Use **Plan files > Download backup** to move a plan between devices.
 - For clients, open **Reports > Client quote** and print to PDF. Clients never need access to the app.
 - Before quoting, replace every ingredient marked "Estimate: check price" and the gas, electricity and equipment numbers on the Equipment tab.

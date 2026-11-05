@@ -16,7 +16,8 @@ node --check dist/app.mjs
 ```
 
 ## Source map
-- dist/index.html: page shell/navigation
+- dist/index.html: app shell (sidebar on desktop, bottom tab bar on phones)
+- dist/sw.js, dist/manifest.webmanifest, dist/icons/: installable app and offline support. Bump CACHE in sw.js on each release.
 - dist/style.css: complete styles, including dashboard and responsive rules
 - dist/app.mjs: UI rendering, input handling, local saving, JSON backup/import, CSV exports, printing
 - dist/model.mjs: pure calculation engine
@@ -66,3 +67,6 @@ Calculation tests passed on the packaged source. Dashboard navigation and a day-
 - Energy per kit = days x units x hours per service x services x kW x burner load. Services per day: breakfast 1, lunch and dinner 2, extras 1 (all day). Units to hire = busiest service / (portions per hour x service window).
 - Energy is an estimate and is NOT added to the quote. The quote still carries the fuel and cleaning allowance from Costs & margin; the Equipment tab and dashboard show both so they can be compared.
 - Gas £0.10 and electricity £0.30 per kWh, and the kW and throughput figures, are estimates. Replace them with your supplier and hire company numbers.
+
+## Installable app
+The app installs from the browser and works offline (service worker caches every file listed in sw.js). Inputs keep focus after a value is saved, so Tab moves through fields without losing your place. `node test-pwa.mjs` checks the manifest, icons and cached file list.
