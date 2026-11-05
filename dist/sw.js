@@ -1,6 +1,6 @@
 // Crew Table service worker: installable app that also works offline.
 // Bump CACHE when you release, so installed copies pick up the new files straight away.
-const CACHE = 'crew-table-v12';
+const CACHE = 'crew-table-v13';
 const FILES = ['./', 'index.html', 'style.css', 'app.mjs', 'model.mjs', 'data.mjs', 'plan.mjs', 'reports.mjs', 'charts.mjs', 'equipment.mjs', 'team.mjs', 'crossover.mjs', 'rota.mjs', 'brand.mjs', 'quotes.mjs', 'pdf.mjs', 'vendor/jspdf.umd.min.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon.svg'];
 
 self.addEventListener('install', e => {

@@ -4,7 +4,7 @@ import {CLIENT_DEFAULT} from './reports.mjs';
 import {defaultRota, checkRota} from './rota.mjs';
 
 export function validate(s){
- if(!s||s.version!==6||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
+ if(!s||s.version!==7||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
  const finite=(n,min=0,max=1e7)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
  const short=v=>typeof v==='string'&&v.length<=500;
  if(!short(s.name)||s.ingredients.length<1||s.ingredients.length>300||s.overheads.length>100)throw Error('Check the event name and plan size.');
@@ -40,9 +40,10 @@ export function validate(s){
 // Older plans (version 1 and 2) have a different menu. Keep the user's event, crew, prices and overheads; use the current menu.
 export function migrate(s) {
   if (!s || typeof s !== 'object') return s;
-  if (s.version === 3) return migrate4(migrate3(s));
-  if (s.version === 4) return migrate4(s);
-  if (s.version === 5) return migrate5(s);
+  if (s.version === 3) return migrate6(migrate4(migrate3(s)));
+  if (s.version === 4) return migrate6(migrate4(s));
+  if (s.version === 5) return migrate6(migrate5(s));
+  if (s.version === 6) return migrate6(s);
   if (s.version !== 1 && s.version !== 2) return s;
   const v1 = s.version === 1, keep = v1 ? 36 : 51;
   const n = structuredClone(DEFAULT);
@@ -124,6 +125,27 @@ function migrate5(s) {
     if (n.recipes[20] && n.recipes[20].key === 'tomato-cucumber-salad') n.recipes[20] = structuredClone(DEFAULT.recipes[20]);
     const leaf = n.recipes[16], slaw = n.recipes[21];
     if (leaf && slaw && leaf.weight === 35 && slaw.weight === 25) { leaf.weight = DEFAULT.recipes[16].weight; slaw.weight = DEFAULT.recipes[21].weight; }
+  }
+  return n;
+}
+
+// Version 6 burgers used ready-made patties and their own buns. Version 7 makes the beef burger from the same mince as the
+// bolognese and uses the bap rolls for both burgers. Only recipes still on the old ingredients are changed.
+const OLD_BURGERS = {
+  14: [[44, 1], [46, 1], [47, 1], [9, 0.01], [28, 0.01], [42, 0.015], [52, 0.2]],
+  15: [[45, 1], [46, 1], [47, 1], [9, 0.01], [28, 0.01], [42, 0.015], [52, 0.2]]
+};
+function migrate6(s) {
+  const n = structuredClone(s);
+  n.version = 7;
+  if (Array.isArray(n.recipes)) {
+    for (const [i, old] of Object.entries(OLD_BURGERS)) {
+      const r = n.recipes[i];
+      if (r && Array.isArray(r.lines) && r.lines.length === old.length && r.lines.every((l, k) => l.ingredient === old[k][0] && l.qty === old[k][1])) {
+        r.lines = structuredClone(DEFAULT.recipes[i].lines);
+        r.note = DEFAULT.recipes[i].note;
+      }
+    }
   }
   return n;
 }

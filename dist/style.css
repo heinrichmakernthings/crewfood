@@ -252,3 +252,9 @@ section.card .disclosure{margin-top:12px}
 .dashboard-head h2{margin-top:0}.dashboard-head>div>p{margin:2px 0 10px}
 #event-name{text-overflow:ellipsis}
 @media(max-width:700px){.rw{flex-direction:row;align-items:center;gap:6px}.rw small{order:2}.recipe-row{gap:4px 12px}}
+
+/* Crossover suggestions */
+.xsug{margin:0 0 14px}.xsug h3{margin:0}.sg{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line)}.sg:first-of-type{border-top:0}
+.sg-main{display:flex;flex-direction:column;gap:2px;min-width:0}.sg-main b{font-size:15px}.sg-main span{font-size:13px;color:var(--muted)}.sg-main small{font-size:12px;color:var(--muted)}.sg-main small b{color:var(--ink);font-size:12px;font-variant-numeric:tabular-nums}.sg-main small i{font-style:normal;margin:0 3px;color:#b9c4bc}
+.inl-check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap}.inl-check input{width:16px;height:16px}
+.sg-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.sg-main em.xtag{font-style:normal;color:#fff;font-size:10.5px}

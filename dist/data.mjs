@@ -1,5 +1,5 @@
 export const DEFAULT = {
-  "version": 6,
+  "version": 7,
   "name": "Festival crew catering",
   "ingredients": [
     {
@@ -1429,7 +1429,7 @@ export const DEFAULT = {
       "type": "Main",
       "key": "beef-burger",
       "name": "Beef burger and fries",
-      "note": "Meat. Build only",
+      "note": "Meat. Build only. Patties made from the same mince as the bolognese and chilli, in the same bap as the bacon bap",
       "weight": 14,
       "phases": [
         true,
@@ -1438,11 +1438,19 @@ export const DEFAULT = {
       ],
       "lines": [
         {
-          "ingredient": 44,
-          "qty": 1
+          "ingredient": 0,
+          "qty": 0.12
         },
         {
-          "ingredient": 46,
+          "ingredient": 6,
+          "qty": 0.01
+        },
+        {
+          "ingredient": 34,
+          "qty": 0.001
+        },
+        {
+          "ingredient": 41,
           "qty": 1
         },
         {
@@ -1476,7 +1484,7 @@ export const DEFAULT = {
       "type": "Main",
       "key": "veggie-burger",
       "name": "Veggie burger and fries",
-      "note": "Vegetarian. Build only",
+      "note": "Vegetarian. Build only. In the same bap as the bacon bap",
       "weight": 6,
       "phases": [
         true,
@@ -1489,7 +1497,7 @@ export const DEFAULT = {
           "qty": 1
         },
         {
-          "ingredient": 46,
+          "ingredient": 41,
           "qty": 1
         },
         {

@@ -38,7 +38,7 @@ Latest change: dashboard opens with quote/cost/profit, all three phases with edi
 
 ## Calculation rules and baseline
 - Default: 1,150 person-days and 3,450 meals.
-- Default total cost: £19,787.01; selling price: £26,382.68; profit: £6,595.67 (chef wage £17/h, all four extras ticked, gas and electric charged into the cost, no equipment fee).
+- Default total cost: £19,848.60; selling price: £26,464.80; profit: £6,616.20 (chef wage £17/h, all four extras ticked, gas and electric charged into the cost, no equipment fee).
 - Margin is profit / selling price: price = cost / (1 - margin / 100), not markup.
 - Ingredients use raw net quantities with usable-yield adjustment and food buffer once.
 - Purchase packs round up over the whole event; excess stock is charged to this event.
@@ -100,3 +100,7 @@ Ranks the meals being served by how efficient they are to buy for. A meal's scor
 ## Layout notes
 - The live quote is a pill in the top bar on every editing screen; tap it for the breakdown, Client quote and Export CSV. This replaced the side panel so tables get the full width. The Dashboard, Reports and Quotes screens show the price themselves, so the pill is hidden there.
 - Tables and lists are kept to one line per row (Shopping list, Menu & recipes). The Dashboard has one "What does the client want?" section that includes the kitchen kit.
+
+## Burgers and suggestions (plan version 7)
+- The beef burger is made from the same beef mince as the bolognese and chilli, and both burgers use the same bap rolls as the bacon baps (no ready-made patties or burger buns). Version 6 plans get the new burger recipes unless the burger was edited. Ready-made patties and burger buns stay in the ingredient list but are unused, so the Shopping list hides them until you tick Show unused.
+- Ingredient crossover now makes suggestions: ingredients you already buy that fit a meal (tomato in the burger, peppers in the bolognese, mushrooms in the lentil bolognese). `PAIRINGS` in `crossover.mjs` lists which ingredients usually go with which meals. Each candidate is tried for real by recalculating the whole plan, then shown with the real change in shopping bill, unused stock and quote, and which meal gets more efficient. Free ones (no extra shopping, less waste) come first, then ones that turn a one-meal ingredient into a shared one. Tap Add to put it in the recipe. To teach it a new pairing, add a line to `PAIRINGS`.

@@ -31,7 +31,7 @@ for(const k of ['drinks','fruit','cereal','salads']){const off=structuredClone(s
 const noCereal=structuredClone(st);noCereal.options.cereal=false;assert.equal(calculate(noCereal).servings[19],0);
 const two=calculate(st,'two');assert.equal(two.servings[19],0,'no cereal when breakfast is not served');
 const old={version:1,name:'Old plan',ingredients:st.ingredients.filter(i=>i.id<=36),recipes:Array(13).fill({}),phases:st.phases.map(p=>({...p,groups:p.groups.map(g=>({...g,extras:false})),staff:p.staff.map(r=>r.name==='Lead cook'?{...r,rate:22}:r.name==='Cook'?{...r,rate:18}:r)})),settings:(({cereal,...x})=>x)(st.settings),overheads:st.overheads};
-const m=migrate(old);validate(m);assert.equal(m.version,6);assert.equal(m.name,'Old plan');assert.equal(m.phases[0].staff[0].rate,17);assert.ok(m.phases[0].groups.every(g=>g.extras));assert.equal(m.recipes.length,22);
+const m=migrate(old);validate(m);assert.equal(m.version,7);assert.equal(m.name,'Old plan');assert.equal(m.phases[0].staff[0].rate,17);assert.ok(m.phases[0].groups.every(g=>g.extras));assert.equal(m.recipes.length,22);
 const v2=structuredClone(st);delete v2.options;v2.recipes.forEach(r=>delete r.phases);validate(v2);assert.equal(v2.options.cereal,true);assert.deepEqual(v2.recipes[0].phases,[true,true,true]);
 }
 console.log('menu v2 tests passed');
@@ -48,7 +48,7 @@ const noBuild=structuredClone(st);noBuild.phases[0].days=0;assert.ok(calculate(n
 const allElec=structuredClone(st);allElec.equipment.forEach(e=>e.fuel='electric');const ae=calculate(allElec);assert.equal(ae.energyTotals.gasKwh,0);assert.ok(Math.abs(ae.energyTotals.cost-c0.energyTotals.allElectric)<1e-6);
 const none=structuredClone(st);none.recipes.forEach(r=>{r.equipment=r.equipment.filter(k=>k!=='fryer')});const nf=calculate(none).energy.find(e=>e.key==='fryer');assert.equal(nf.units,0);assert.equal(nf.kwh,0);
 const old2=structuredClone(st);old2.version=2;delete old2.equipment;['gas','electric','serviceHours','load'].forEach(k=>delete old2.settings[k]);old2.recipes.forEach(r=>delete r.equipment);old2.recipes[10].name='Chicken and potato traybake';old2.recipes[0].weight=77;old2.name='Kept name';
-const m2=migrate(old2);validate(m2);assert.equal(m2.version,6);assert.equal(m2.name,'Kept name');assert.equal(m2.recipes[0].weight,77);assert.equal(m2.recipes[10].name,'Fried chicken and fries');assert.ok(m2.equipment.length===4);
+const m2=migrate(old2);validate(m2);assert.equal(m2.version,7);assert.equal(m2.name,'Kept name');assert.equal(m2.recipes[0].weight,77);assert.equal(m2.recipes[10].name,'Fried chicken and fries');assert.ok(m2.equipment.length===4);
 const v3old=structuredClone(st);delete v3old.equipment;['gas','electric','serviceHours','load'].forEach(k=>delete v3old.settings[k]);v3old.recipes.forEach(r=>delete r.equipment);validate(v3old);assert.ok(v3old.recipes[0].equipment.includes('grill'));
 const bad=structuredClone(st);bad.recipes[0].equipment=['oven'];assert.throws(()=>validate(bad));
 }
@@ -116,10 +116,10 @@ const six=structuredClone(st);six.settings.drinks=6;assert.ok(Math.abs(calculate
 const zero=structuredClone(st);zero.settings.drinks=0;assert.equal(calculate(zero).servings[18],0);
 assert.ok(c0.recipeCosts[18]>0.05&&c0.recipeCosts[18]<0.12,'about 7p a cup');
 const cups=structuredClone(st);cups.settings.cups=0.1;assert.ok(calculate(cups).consumables>c0.consumables,'cup cost per drink');
-assert.ok(Math.abs(c0.price-26392.73)<0.01,'default price');
+assert.ok(Math.abs(c0.price-26464.80)<0.01,'default price');
 // upgrade from version 3 (drinks was an allowance, 1 = 5 drinks; cups was per allowance)
 const v3=structuredClone(st);v3.version=3;v3.settings.drinks=1;v3.settings.cups=0.25;v3.recipes[18]={...v3.recipes[18],name:'Hot drinks allowance',lines:[{ingredient:32,qty:0.006},{ingredient:33,qty:2},{ingredient:19,qty:0.15},{ingredient:20,qty:0.05},{ingredient:22,qty:0.02}]};v3.equipment.find(e=>e.key==='urn').perHour=40;
-const m=migrate(v3);validate(m);assert.equal(m.version,6);assert.equal(m.settings.drinks,5);assert.ok(Math.abs(m.settings.cups-0.05)<1e-12);assert.equal(m.recipes[18].name,'Hot drinks');
+const m=migrate(v3);validate(m);assert.equal(m.version,7);assert.equal(m.settings.drinks,5);assert.ok(Math.abs(m.settings.cups-0.05)<1e-12);assert.equal(m.recipes[18].name,'Hot drinks');
 assert.ok(Math.abs(calculate(m).price-c0.price)<0.01,'upgrading does not change the price');
 const v3b=structuredClone(v3);v3b.settings.drinks=2;const mb=migrate(v3b);assert.equal(mb.settings.drinks,10,'an edited allowance is converted');
 // older versions are converted too
@@ -144,16 +144,16 @@ const fg=foodGroups(st,c0);assert.ok(fg.some(g=>g.label==='Salads'&&g.value>0));
 const html=renderClientQuote(st,c0,calculate(st,'two'),calculate(st,'three'),{esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n)),today:'2026-11-05'});assert.ok(html.includes('Two salads with every lunch and dinner (leaf salad, everything salad, coleslaw)'));
 // upgrade from version 4 (one Big salads recipe)
 const v4=structuredClone(st);v4.version=4;v4.ingredients=v4.ingredients.filter(i=>i.id!==54);v4.recipes=v4.recipes.slice(0,20);v4.recipes[16]={id:16,type:'Extra',key:'salad',name:'Big salads',note:'old',weight:0,phases:[true,true,true],equipment:[],lines:[{ingredient:28,qty:0.05}]};v4.settings.salads=1;
-const m=migrate(v4);validate(m);assert.equal(m.version,6);assert.equal(m.recipes.length,22);assert.equal(m.recipes[16].name,'Leaf salad');assert.equal(m.recipes[20].name,'Everything salad');assert.equal(m.recipes[21].name,'Coleslaw');assert.equal(m.settings.salads,2,'one big salad becomes two salads');assert.ok(m.ingredients.some(i=>i.id===54&&i.name==='Mayonnaise'));
+const m=migrate(v4);validate(m);assert.equal(m.version,7);assert.equal(m.recipes.length,22);assert.equal(m.recipes[16].name,'Leaf salad');assert.equal(m.recipes[20].name,'Everything salad');assert.equal(m.recipes[21].name,'Coleslaw');assert.equal(m.settings.salads,2,'one big salad becomes two salads');assert.ok(m.ingredients.some(i=>i.id===54&&i.name==='Mayonnaise'));
 assert.ok(Math.abs(calculate(m).price-c0.price)<0.01,'a migrated default plan prices the same as a new one');
 const v4b=structuredClone(v4);v4b.settings.salads=3;assert.equal(migrate(v4b).settings.salads,3,'a changed amount is kept');
 const v4c=structuredClone(v4);v4c.ingredients.push({...v4c.ingredients[0],id:54,name:'My custom item'});v4c.recipes[2].lines.push({ingredient:54,qty:0.1});const mc=migrate(v4c);validate(mc);const custom=mc.ingredients.find(i=>i.name==='My custom item');assert.ok(custom.id!==54,'custom item moved to a free id');assert.ok(mc.recipes[2].lines.some(l=>l.ingredient===custom.id),'its recipe line still points at it');assert.equal(mc.ingredients.find(i=>i.id===54).name,'Mayonnaise');
 const v5=structuredClone(st);v5.version=5;v5.recipes[20]={...v5.recipes[20],key:'tomato-cucumber-salad',name:'Tomato and cucumber salad'};v5.recipes[16].weight=35;v5.recipes[21].weight=25;v5.recipes.push({id:22,type:'Salad',key:'carrot-salad',name:'Shredded carrot salad',note:'',weight:15,phases:[true,true,true],equipment:[],lines:[{ingredient:7,qty:0.08}]});
-const m5=migrate(v5);validate(m5);assert.equal(m5.version,6);assert.equal(m5.recipes.length,22);assert.deepEqual([16,20,21].map(i=>m5.recipes[i].name),['Leaf salad','Everything salad','Coleslaw']);assert.equal(m5.recipes[16].weight,40,'untouched default weights follow the new menu');assert.ok(Math.abs(calculate(m5).price-c0.price)<0.01,'a migrated default plan prices the same as a new one');
+const m5=migrate(v5);validate(m5);assert.equal(m5.version,7);assert.equal(m5.recipes.length,22);assert.deepEqual([16,20,21].map(i=>m5.recipes[i].name),['Leaf salad','Everything salad','Coleslaw']);assert.equal(m5.recipes[16].weight,40,'untouched default weights follow the new menu');assert.ok(Math.abs(calculate(m5).price-c0.price)<0.01,'a migrated default plan prices the same as a new one');
 const v5b=structuredClone(v5);v5b.recipes[16].weight=70;v5b.recipes[21].weight=10;const m5b=migrate(v5b);assert.equal(m5b.recipes[16].weight,70,'changed weights are kept');assert.equal(m5b.recipes[21].weight,10);
 const again=migrate(migrate(v4));assert.equal(again.ingredients.filter(i=>i.id===54).length,1,'migrating twice does not duplicate');
 // older versions upgrade through every step
-const v3=structuredClone(v4);v3.version=3;v3.settings.drinks=1;v3.settings.cups=0.25;const m3=migrate(v3);validate(m3);assert.equal(m3.version,6);assert.equal(m3.recipes.length,22);
+const v3=structuredClone(v4);v3.version=3;v3.settings.drinks=1;v3.settings.cups=0.25;const m3=migrate(v3);validate(m3);assert.equal(m3.version,7);assert.equal(m3.recipes.length,22);
 }
 console.log('salad tests passed');
 // Ingredient crossover
@@ -168,14 +168,37 @@ assert.ok(ing('Lettuce').recipeCount>=3&&ing('Lettuce').recipes.includes('Leaf s
 assert.equal(ing('Bacon rashers').recipeCount,2,'bacon is shared by the bacon bap and the carbonara');assert.equal(by('Bacon bap').sharedPct,100);
 for(let i=1;i<x.ingredients.length;i++)assert.ok(x.ingredients[i-1].recipeCount>=x.ingredients[i].recipeCount,'most shared ingredients first');
 assert.ok(x.sharedPct>0&&x.sharedPct<100);assert.ok(Math.abs(x.spend-sum(c.shopping.map(i=>i.spend)))<1e-6,'spend matches the shopping list');assert.ok(x.leftover>0);
-assert.ok(x.wins.length<=3&&x.wins.every(w=>w.leftover>=X.WIN_MIN_LEFTOVER),'tips are worth having');assert.ok(x.wins.every(w=>!['Instant coffee','Tea bags','Apples','Cereal variety'].includes(w.name)),'no tips about drinks, fruit or cereal, which are bought in bulk anyway');assert.ok(x.wins.some(w=>w.name==='Beef burgers'),'but a burger-only ingredient is a real tip');
+assert.ok(x.wins.length<=3&&x.wins.every(w=>w.leftover>=X.WIN_MIN_LEFTOVER),'tips are worth having');assert.ok(x.wins.every(w=>!['Instant coffee','Tea bags','Apples','Cereal variety'].includes(w.name)),'no tips about drinks, fruit or cereal, which are bought in bulk anyway');assert.ok(x.wins.length>0&&x.wins.every(w=>!x.ingredients.find(i=>i.name===w.name).shared),'tips are about ingredients only one meal uses');
 // using tomatoes in the burgers makes them shared, and the tip and the solo list update
 const tom=structuredClone(st);const tid=st.ingredients.find(i=>i.name==='Salad tomatoes').id;tom.recipes[14].lines.push({ingredient:tid,qty:0.03});const xt=X.crossover(tom,calculate(tom));
 assert.equal(xt.recipes.find(r=>r.name==='Everything salad').solo.length,0,'tomatoes now shared');assert.ok(xt.recipes.find(r=>r.name==='Everything salad').sharedPct>by('Everything salad').sharedPct);assert.equal(xt.ingredients.find(i=>i.name==='Salad tomatoes').recipeCount,2);
 // meals that are not served are not counted
 const noBurger=structuredClone(st);noBurger.recipes[14].phases=[false,false,false];noBurger.recipes[15].phases=[false,false,false];const xb=X.crossover(noBurger,calculate(noBurger));assert.ok(!xb.recipes.some(r=>r.name.includes('burger')));assert.equal(xb.ingredients.find(i=>i.name==='Lettuce').recipes.includes('Beef burger and fries'),false);
-const h={esc:s=>String(s),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n))};const html=X.renderCrossover(st,c,h);assert.ok(html.includes('Meal ranking')&&html.includes('Coleslaw')&&html.includes('Easy wins')&&html.includes('Show the other'));
+const h={esc:s=>String(s),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n))};const html=X.renderCrossover(st,c,h);assert.ok(html.includes('Meal ranking')&&html.includes('Coleslaw')&&html.includes('Suggestions')&&html.includes('Unused stock')&&html.includes('Show the other'));
 const bad=structuredClone(st);bad.recipes.slice(0,4).forEach(r=>r.weight=0);assert.ok(X.renderCrossover(bad,calculate(bad),h).includes('Fix the menu'));
+// Burgers share the mince with the bolognese and the bap with the bacon bap
+const bb=st.recipes[14],mince=st.ingredients.find(i=>i.name==='Beef mince').id,bap=st.ingredients.find(i=>i.name==='Bap rolls').id;
+assert.ok(bb.lines.some(l=>l.ingredient===mince)&&bb.lines.some(l=>l.ingredient===bap),'beef burger is made from mince, in a bap');assert.ok(st.recipes[15].lines.some(l=>l.ingredient===bap),'veggie burger uses the bap too');assert.ok(!bb.lines.some(l=>l.ingredient===44||l.ingredient===46),'no ready-made patties or burger buns');
+assert.equal(by('Beef burger and fries').sharedPct,100,'beef burger shares everything');assert.ok(ing('Beef mince').recipes.includes('Beef burger and fries')&&ing('Beef mince').recipes.includes('Beef bolognese and pasta'));assert.ok(ing('Bap rolls').recipes.includes('Bacon bap')&&ing('Bap rolls').recipes.includes('Beef burger and fries'));
+// Suggestions
+const sg=X.suggestions(st,c);assert.ok(sg.length>0&&sg.length<=6);
+const tomBurger=sg.find(g=>g.ingredientName==='Salad tomatoes'&&g.recipeName==='Beef burger and fries');assert.ok(tomBurger,'it suggests tomato in the burger');assert.ok(tomBurger.becomesShared&&tomBurger.meal.name==='Everything salad'&&tomBurger.meal.to>tomBurger.meal.from,'which makes the everything salad more efficient');
+for(const g of sg){const t2=structuredClone(st);t2.recipes[g.recipeIndex].lines.push({ingredient:g.ingredientId,qty:g.qty});const c2=calculate(t2);assert.ok(Math.abs(c2.price-c.price-g.priceChange)<1e-6&&Math.abs(c2.purchased-c.purchased-g.extraSpend)<1e-6,'numbers are the real difference: '+g.ingredientName+' in '+g.recipeName);assert.ok(!st.recipes[g.recipeIndex].lines.some(l=>l.ingredient===g.ingredientId),'not already in the recipe');}
+assert.equal(new Set(sg.map(g=>g.ingredientId)).size,sg.length,'one suggestion per ingredient');
+for(let i=1;i<sg.length;i++){const a=sg[i-1],b=sg[i];assert.ok(Number(a.free)>=Number(b.free),'free suggestions come first');}
+const free=sg.filter(g=>g.free);assert.ok(free.every(g=>g.extraSpend<0.5&&g.wasteSaved>0),'free means no extra shopping and less waste');
+// applying one
+const ap=structuredClone(st);const res=X.applySuggestion(ap,tomBurger.recipeIndex+':'+tomBurger.ingredientId+':'+tomBurger.qty);assert.deepEqual(res,{recipe:'Beef burger and fries',ingredient:'Salad tomatoes'});assert.ok(ap.recipes[14].lines.some(l=>l.ingredient===tomBurger.ingredientId));validate(ap);
+const xa=X.crossover(ap,calculate(ap));assert.equal(xa.recipes.find(r=>r.name==='Everything salad').sharedPct,100);assert.ok(!X.suggestions(ap,calculate(ap)).some(g=>g.ingredientName==='Salad tomatoes'&&g.recipeName==='Beef burger and fries'),'the suggestion goes away once added');
+assert.equal(X.applySuggestion(ap,tomBurger.recipeIndex+':'+tomBurger.ingredientId+':'+tomBurger.qty),null,'adding twice does nothing');assert.equal(X.applySuggestion(ap,'99:1:0.1'),null);assert.equal(X.applySuggestion(ap,'14:9999:0.1'),null);assert.equal(X.applySuggestion(ap,'14:1:0'),null);
+// no suggestions for meals that are not served, or when the menu has a problem
+const nb=structuredClone(st);nb.recipes[14].phases=[false,false,false];assert.ok(!X.suggestions(nb,calculate(nb)).some(g=>g.recipeName==='Beef burger and fries'));
+const badm=structuredClone(st);badm.recipes.slice(0,4).forEach(r=>r.weight=0);assert.deepEqual(X.suggestions(badm,calculate(badm)),[]);
+assert.ok(X.renderCrossover(st,c,h).includes('Suggestions')&&X.renderCrossover(st,c,h).includes('data-action="suggest-apply"'));
+// version 6 burgers upgrade, but edited burgers are left alone
+const OLD14=[[44,1],[46,1],[47,1],[9,0.01],[28,0.01],[42,0.015],[52,0.2]],v6=structuredClone(st);v6.version=6;v6.recipes[14].lines=OLD14.map(([ingredient,qty])=>({ingredient,qty}));v6.recipes[14].note='old';
+const m6=migrate(v6);validate(m6);assert.equal(m6.version,7);assert.deepEqual(m6.recipes[14].lines,st.recipes[14].lines,'untouched old burger gets the new recipe');assert.ok(Math.abs(calculate(m6).price-c.price)<0.01);
+const v6e=structuredClone(v6);v6e.recipes[14].lines.push({ingredient:6,qty:0.02});const m6e=migrate(v6e);assert.equal(m6e.recipes[14].lines.length,OLD14.length+1,'an edited burger is kept as it is');
 console.log('crossover tests passed');
 });
 // Team earnings
