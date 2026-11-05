@@ -85,7 +85,8 @@ export function clientQuote(state, c, two, three) {
     if (!names.length) return null;
     return names.length === liveNames.length ? '' : ` (${names.join(' & ')} only)`;
   };
-  [['salads', 'Big salads with lunch and dinner'], ['cereal', 'Cereal station at breakfast'], ['fruit', 'Fresh fruit'], ['drinks', 'Tea, coffee, milk and sugar']].forEach(([k, text]) => {
+  const words = {1: 'One', 2: 'Two', 3: 'Three'}, saladNames = state.recipes.filter(r => r.type === 'Salad' && r.weight > 0).map(r => r.name.toLowerCase());
+  [['salads', `${words[t.salads] || t.salads} ${t.salads === 1 ? 'salad' : 'salads'} with every lunch and dinner${saladNames.length ? ' (' + saladNames.join(', ') + ')' : ''}`], ['cereal', 'Cereal station at breakfast'], ['fruit', 'Fresh fruit'], ['drinks', 'Tea, coffee, milk and sugar']].forEach(([k, text]) => {
     const w = where(k);
     if (w !== null) everyDay.push(text + w);
   });

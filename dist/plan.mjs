@@ -4,7 +4,7 @@ import {CLIENT_DEFAULT} from './reports.mjs';
 import {defaultRota, checkRota} from './rota.mjs';
 
 export function validate(s){
- if(!s||s.version!==4||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
+ if(!s||s.version!==5||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
  const finite=(n,min=0,max=1e7)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
  const short=v=>typeof v==='string'&&v.length<=500;
  if(!short(s.name)||s.ingredients.length<1||s.ingredients.length>300||s.overheads.length>100)throw Error('Check the event name and plan size.');
@@ -40,7 +40,8 @@ export function validate(s){
 // Older plans (version 1 and 2) have a different menu. Keep the user's event, crew, prices and overheads; use the current menu.
 export function migrate(s) {
   if (!s || typeof s !== 'object') return s;
-  if (s.version === 3) return migrate3(s);
+  if (s.version === 3) return migrate4(migrate3(s));
+  if (s.version === 4) return migrate4(s);
   if (s.version !== 1 && s.version !== 2) return s;
   const v1 = s.version === 1, keep = v1 ? 36 : 51;
   const n = structuredClone(DEFAULT);
@@ -89,5 +90,26 @@ function migrate3(s) {
     r.lines = d.lines.map(l => ({...l}));
   }
   if (Array.isArray(n.equipment)) n.equipment.forEach(e => { if (e.key === 'urn' && e.perHour === 40) e.perHour = 200; });
+  return n;
+}
+
+// Version 4 plans had one "Big salads" recipe. Version 5 has a salad menu (leaf, tomato and cucumber, coleslaw,
+// shredded carrot) and two salads with every lunch and dinner.
+function migrate4(s) {
+  const n = structuredClone(s);
+  n.version = 5;
+  if (Array.isArray(n.ingredients) && Array.isArray(n.recipes)) {
+    const have = n.ingredients.find(i => i && i.id === 54);
+    const clash = have && have.name !== 'Mayonnaise' ? have : null;
+    if (clash) {
+      const free = Math.max(...n.ingredients.map(i => i.id)) + 1;
+      clash.id = free;
+      n.recipes.forEach(r => Array.isArray(r.lines) && r.lines.forEach(l => { if (l.ingredient === 54) l.ingredient = free; }));
+    }
+    if (!(have && have.name === 'Mayonnaise')) n.ingredients.push({...DEFAULT.ingredients.find(i => i.id === 54)});
+    if (n.recipes[16] && n.recipes[16].key === 'salad') n.recipes[16] = structuredClone(DEFAULT.recipes[16]);
+    if (n.recipes.length === 20) [20, 21, 22].forEach(i => n.recipes.push(structuredClone(DEFAULT.recipes[i])));
+  }
+  if (n.settings && (n.settings.salads === 1 || !Number.isFinite(n.settings.salads))) n.settings.salads = 2;
   return n;
 }

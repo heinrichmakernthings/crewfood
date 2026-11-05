@@ -1,5 +1,5 @@
 export const DEFAULT = {
-  "version": 4,
+  "version": 5,
   "name": "Festival crew catering",
   "ingredients": [
     {
@@ -700,6 +700,19 @@ export const DEFAULT = {
       "yield": 1,
       "sku": "",
       "packLabel": "Estimate: 16kg bag",
+      "url": "",
+      "checked": "",
+      "status": "Estimate: check price"
+    },
+    {
+      "id": 54,
+      "name": "Mayonnaise",
+      "unit": "kg",
+      "pack": 10,
+      "price": 18,
+      "yield": 1,
+      "sku": "",
+      "packLabel": "Estimate: 10kg catering mayonnaise",
       "url": "",
       "checked": "",
       "status": "Estimate: check price"
@@ -1507,11 +1520,11 @@ export const DEFAULT = {
     },
     {
       "id": 16,
-      "type": "Extra",
-      "key": "salad",
-      "name": "Big salads",
-      "note": "Per serving, about 280g. Bowls to go with the main",
-      "weight": 0,
+      "type": "Salad",
+      "key": "leaf-salad",
+      "name": "Leaf salad",
+      "note": "Lettuce with a light dressing, about 50g a serving",
+      "weight": 35,
       "phases": [
         true,
         true,
@@ -1523,36 +1536,12 @@ export const DEFAULT = {
           "qty": 0.05
         },
         {
-          "ingredient": 27,
-          "qty": 0.04
-        },
-        {
-          "ingredient": 7,
-          "qty": 0.03
-        },
-        {
-          "ingredient": 29,
-          "qty": 0.05
-        },
-        {
-          "ingredient": 51,
-          "qty": 0.06
-        },
-        {
-          "ingredient": 16,
-          "qty": 0.03
-        },
-        {
-          "ingredient": 6,
-          "qty": 0.01
-        },
-        {
           "ingredient": 9,
-          "qty": 0.008
+          "qty": 0.004
         },
         {
           "ingredient": 30,
-          "qty": 0.006
+          "qty": 0.003
         }
       ],
       "equipment": []
@@ -1643,6 +1632,114 @@ export const DEFAULT = {
         {
           "ingredient": 22,
           "qty": 0.004
+        }
+      ],
+      "equipment": []
+    },
+    {
+      "id": 20,
+      "type": "Salad",
+      "key": "tomato-cucumber-salad",
+      "name": "Tomato and cucumber salad",
+      "note": "Sliced tomato and cucumber with onion, about 120g a serving",
+      "weight": 25,
+      "phases": [
+        true,
+        true,
+        true
+      ],
+      "lines": [
+        {
+          "ingredient": 51,
+          "qty": 0.06
+        },
+        {
+          "ingredient": 29,
+          "qty": 0.05
+        },
+        {
+          "ingredient": 6,
+          "qty": 0.01
+        },
+        {
+          "ingredient": 9,
+          "qty": 0.004
+        },
+        {
+          "ingredient": 30,
+          "qty": 0.004
+        },
+        {
+          "ingredient": 34,
+          "qty": 0.0005
+        }
+      ],
+      "equipment": []
+    },
+    {
+      "id": 21,
+      "type": "Salad",
+      "key": "coleslaw",
+      "name": "Coleslaw",
+      "note": "Cabbage, carrot and onion in mayonnaise, about 110g a serving",
+      "weight": 25,
+      "phases": [
+        true,
+        true,
+        true
+      ],
+      "lines": [
+        {
+          "ingredient": 27,
+          "qty": 0.07
+        },
+        {
+          "ingredient": 7,
+          "qty": 0.03
+        },
+        {
+          "ingredient": 6,
+          "qty": 0.01
+        },
+        {
+          "ingredient": 54,
+          "qty": 0.025
+        },
+        {
+          "ingredient": 30,
+          "qty": 0.002
+        },
+        {
+          "ingredient": 34,
+          "qty": 0.0005
+        }
+      ],
+      "equipment": []
+    },
+    {
+      "id": 22,
+      "type": "Salad",
+      "key": "carrot-salad",
+      "name": "Shredded carrot salad",
+      "note": "Shredded carrot with a light dressing, about 80g a serving",
+      "weight": 15,
+      "phases": [
+        true,
+        true,
+        true
+      ],
+      "lines": [
+        {
+          "ingredient": 7,
+          "qty": 0.08
+        },
+        {
+          "ingredient": 9,
+          "qty": 0.004
+        },
+        {
+          "ingredient": 30,
+          "qty": 0.003
         }
       ],
       "equipment": []
@@ -1823,7 +1920,7 @@ export const DEFAULT = {
     "waste": 5,
     "contingency": 5,
     "oncost": 15,
-    "salads": 1,
+    "salads": 2,
     "fruit": 2,
     "drinks": 5,
     "disposables": 0.18,

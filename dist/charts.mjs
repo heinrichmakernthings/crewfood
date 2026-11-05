@@ -27,7 +27,7 @@ export function foodGroups(state, c) {
   return [
     {label: 'Breakfast baps', value: part(r => r.type === 'Breakfast')},
     {label: 'Lunch & dinner mains', value: part(r => r.type === 'Main')},
-    {label: 'Big salads', value: part(r => r.key === 'salad')},
-    {label: 'Cereal, fruit & hot drinks', value: part(r => r.type === 'Extra' && r.key !== 'salad')}
+    {label: 'Salads', value: part(r => r.type === 'Salad')},
+    {label: 'Cereal, fruit & hot drinks', value: part(r => r.type === 'Extra')}
   ];
 }

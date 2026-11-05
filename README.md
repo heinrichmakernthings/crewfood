@@ -38,7 +38,7 @@ Latest change: dashboard opens with quote/cost/profit, all three phases with edi
 
 ## Calculation rules and baseline
 - Default: 1,150 person-days and 3,450 meals.
-- Default total cost: £20,437.11; selling price: £27,249.47; profit: £6,812.37 (chef wage £17/h, all four extras ticked, gas and electric charged into the cost, no equipment fee).
+- Default total cost: £19,787.01; selling price: £26,382.68; profit: £6,595.67 (chef wage £17/h, all four extras ticked, gas and electric charged into the cost, no equipment fee).
 - Margin is profit / selling price: price = cost / (1 - margin / 100), not markup.
 - Ingredients use raw net quantities with usable-yield adjustment and food buffer once.
 - Purchase packs round up over the whole event; excess stock is charged to this event.
@@ -58,8 +58,8 @@ Calculation tests passed on the packaged source. Dashboard navigation and a day-
 
 ## Menu v2 notes
 - Plan version is now 3. Version 1 and 2 plans open and upgrade: event, crew, prices and overheads are kept; the menu is replaced; Lead cook £22 and Cook £18 move to the new £17 default.
-- Recipes carry `phases` (which stages serve them) and Extras carry a `key` (salad, fruit, drinks, cereal). Options live in `options` (four booleans).
-- Prices marked "Estimate: check price" (bacon, sausages, baps, burgers, cereal, cream, cheese, mushrooms, salad tomatoes) are not from Booker. Replace them with real prices before quoting.
+- Recipes carry `phases` (which stages serve them) and Extras carry a `key` (fruit, drinks, cereal). Options live in `options` (four booleans).
+- Prices marked "Estimate: check price" (bacon, sausages, baps, burgers, cereal, cream, cheese, mushrooms, salad tomatoes, mayonnaise) are not from Booker. Replace them with real prices before quoting.
 
 ## Equipment and energy (version 3)
 - No ovens. The menu uses a fryer, a grill, hobs and a urn: wedges became fries, the traybake became fried chicken and fries, the cottage pie became a lentil stew with mash.
@@ -74,7 +74,7 @@ Calculation tests passed on the packaged source. Dashboard navigation and a day-
 The app installs from the browser and works offline (service worker caches every file listed in sw.js). Inputs keep focus after a value is saved, so Tab moves through fields without losing your place. `node test-pwa.mjs` checks the manifest, icons and cached file list.
 
 ## Granular client options
-Each option (hot drinks, fruit, cereal station, big salads) has a master tick (state.options), a tick per stage (state.optionStages, Build/Live/Break) and its own amount (settings.drinks, fruit, cereal, salads), all set on the dashboard card. An option with no stages ticked is the same as off. The client quote lists each option and adds "(Live only)" style wording when it does not cover every stage.
+Each option (hot drinks, fruit, cereal station, salads) has a master tick (state.options), a tick per stage (state.optionStages, Build/Live/Break) and its own amount (settings.drinks, fruit, cereal, salads), all set on the dashboard card. An option with no stages ticked is the same as off. The client quote lists each option and adds "(Live only)" style wording when it does not cover every stage.
 
 ## Hot drinks (plan version 4)
 Hot drinks are a simple count: `settings.drinks` is drinks per person per day (default 5) and `settings.cups` is the disposable cup cost per drink. The Hot drinks recipe is costed per cup (instant coffee, tea bags, milk, oat drink, sugar; about 60% coffee). Version 3 plans upgrade automatically (the old allowance of 1 becomes 5 drinks), so prices do not change.
@@ -90,3 +90,6 @@ The Pay & rota tab has a second view, Rota. Crew & meals is its own main tab. Ea
 - **Branding** (Reports > Your branding): company name, tagline, brand colour, contact line, footer note and logo, saved once per device (`crew-table-brand-v1`) and used on every quote sheet and PDF. Logos are shrunk to a small PNG. Logic in `brand.mjs`.
 - **Download PDF** (Reports > Client quote, or PDF on a saved quote) builds a branded A4 quote of one or two pages with jsPDF (`vendor/jspdf.umd.min.js`, MIT, loaded only when needed and cached for offline): header with logo, client and event, total, price by stage (and equipment fee), what is included, example menu, optional 2 vs 3 meal options, notes, terms and validity, an approval and signature box for the organiser, footer with contact details and page numbers. It never shows costs, profit, margin or gas and electricity. Logic in `pdf.mjs`. jsPDF's built-in fonts cover Latin-1 only, so other characters print as ?.
 - Quotes and branding are per device. Download a backup now and then.
+
+## Salads (plan version 5)
+Salads are their own recipe type, not one big recipe: leaf salad, tomato and cucumber, coleslaw and shredded carrot, each costed per serving (about 50 to 120g) from real ingredients (lettuce, cucumber, tomato, cabbage, carrot, onion, mayonnaise, oil and vinegar). Every lunch and dinner cover gets `settings.salads` salads (default 2), split across the salad menu by each recipe's mix weight, and each salad can be ticked on or off per stage like a main. Menu & recipes shows the average cost per salad, per meal and for the event. If no salad is on the menu for a stage that serves lunch or dinner, the quote shows a menu warning unless salads are switched off. Version 4 plans upgrade automatically (the old Big salads recipe becomes the salad menu, and a setting of 1 becomes 2).

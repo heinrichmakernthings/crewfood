@@ -206,3 +206,5 @@ button.danger{background:#fff0e8;border-color:#e0b4a8;color:#9b3724}
 }
 @media print{#save-dialog{display:none!important}.rep-actions{display:none!important}}
 #save-form input:invalid{border-color:#b9c4bc;background:#fff}
+
+.salad-sum{background:var(--light);border-radius:10px;padding:10px 14px;margin:8px 0 12px;font-size:14px;color:var(--ink)}.salad-sum span{color:var(--muted);margin:0 4px}
