@@ -22,7 +22,7 @@ export function renderEquipment(state, c, h) {
   const field = (key, label, step, help) => `<div class="field"><label for="setting-${key}">${label}</label>${num('settings.' + key, state.settings[key], label, step, 0, 1000).replace('<input', '<input id="setting-' + key + '"')}<small>${help}</small></div>`;
   return `<div class="section-heading"><div><h2>Equipment & energy</h2><p>Tick the kit each meal needs. Anything fried needs a fryer; bacon baps need a grill.</p></div></div>
 <div class="kpis energy-kpis"><div class="kpi"><span>Gas</span><strong>${fmt(t.gasCost)}</strong><small>${whole(t.gasKwh)} kWh</small></div><div class="kpi"><span>Electricity</span><strong>${fmt(t.elecCost)}</strong><small>${whole(t.elecKwh)} kWh</small></div><div class="kpi"><span>Total energy</span><strong>${fmt(t.cost)}</strong><small>${whole(t.kwh)} kWh for the event</small></div><div class="kpi"><span>All gas vs all electric</span><strong>${fmt(t.allGas)} / ${fmt(t.allElectric)}</strong><small>Same cooking, one fuel</small></div></div>
-<div class="rows">${kitControls(state, c, h)}</div>
+${kitControls(state, c, h)}
 <p class="note">${c.kit.energy ? `Gas & electric is added to your cost, so it carries your margin. The daily allowance of ${fmt(c.daily)} in Costs & margin now covers cleaning and other costs.` : `Gas & electric is not charged. Make sure the daily allowance of ${fmt(c.daily)} in Costs & margin covers it.`} Energy is an estimate from the kit numbers below.</p>
 <h3 class="eq-h">What each meal needs</h3>
 <div class="table-wrap"><table class="eq-table"><thead><tr><th>Meal</th>${eq.map(e => `<th class="tick">${esc(e.name)}</th>`).join('')}<th class="numeric">Energy for event</th></tr></thead><tbody>${group('Breakfast', 'Breakfast')}${group('Lunch & dinner', 'Main')}${group('Salads (cold)', 'Salad')}${group('Extras', 'Extra')}</tbody></table></div>
@@ -39,9 +39,10 @@ export function kitControls(state, c, h) {
     ['energy', 'Charge gas & electric', 'We pay for it, so it goes into your cost and carries your margin.'],
     ['fee', 'Equipment fee', 'A fee for using your kit, shown as its own line on the quote.']
   ];
-  return cards.map(([key, label, help]) => {
+  const body = cards.map(([key, label, help]) => {
     const on = k[key], other = calculate({...state, kit: {...k, [key]: !on}}), diff = Math.abs(c.price - other.price), price = Number.isFinite(diff) ? fmt(diff) : 'n/a';
-    const ctl = key === 'fee' && on ? `<label class="qty"><span>Fee £</span>${num('kit.feeAmount', k.feeAmount, 'Equipment fee amount', 5, 0, 1000000)}</label><label class="qty"><span>per</span><select data-path="kit.feeBasis" aria-label="Fee basis"><option value="day" ${k.feeBasis === 'day' ? 'selected' : ''}>day on site</option><option value="event" ${k.feeBasis === 'event' ? 'selected' : ''}>whole event</option></select></label><span class="subtle">= ${fmt(c.kitFee)} for this event</span>` : '';
-    return `<div class="row ${on ? 'on' : ''}"><label class="switch"><input type="checkbox" data-path="kit.${key}" ${on ? 'checked' : ''} aria-label="${label}"><i></i></label><div class="row-main"><b>${label}</b><small>${help}</small></div><div class="row-ctl">${ctl}</div><div class="row-price">${on ? `<b>+${price}</b><small>in quote</small>` : `<b class="off">${price}</b><small>if added</small>`}</div></div>`;
+    return `<label class="opt ${on ? 'on' : ''}"><input type="checkbox" data-path="kit.${key}" ${on ? 'checked' : ''}><span class="opt-text"><b>${label}</b><small>${help}</small></span><span class="opt-price">${on ? `<b>+${price}</b> in quote` : `would add <b>${price}</b>`}</span></label>`;
   }).join('');
+  const fee = k.fee ? `<div class="kit-fee"><label>Fee £ ${num('kit.feeAmount', k.feeAmount, 'Equipment fee amount', 5, 0, 1000000)}</label><label>per <select data-path="kit.feeBasis" aria-label="Fee basis"><option value="day" ${k.feeBasis === 'day' ? 'selected' : ''}>day on site</option><option value="event" ${k.feeBasis === 'event' ? 'selected' : ''}>whole event</option></select></label><span class="subtle">= ${fmt(c.kitFee)} for this event, added after your margin</span></div>` : '';
+  return `<div class="opt-grid two">${body}</div>${fee}`;
 }

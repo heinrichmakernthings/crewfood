@@ -184,6 +184,3 @@ Source notes use warm fills and brown text. Warnings use warm red fills. The dar
 ## Dashboard overview
 
 Dashboard is the default entry point. A full-width summary shows quote, cost and profit, followed by Build / Live / Break columns with editable day counts and direct crew editor buttons. Cost composition and menu/shopping shortcuts follow below. The quote sidebar appears only in the editing sections. On narrow screens, phase columns stack. Existing detailed inputs remain available in Days & crew, Menu & recipes, Costs & margin, and Shopping list.
-
-## Look and feel (UI overhaul)
-Inter (self-hosted in fonts/) with a layered theme.css over style.css: hairline borders, soft shadows, switch toggles, tinted chips, grouped sidebar (Overview, Event, Money, Output), one KPI strip, and compact rows for client extras and kit. Change tokens at the top of theme.css.
