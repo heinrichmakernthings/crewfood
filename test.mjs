@@ -19,6 +19,7 @@ const html=renderClientQuote(st,c0,t2,t3,h);assert.ok(html.includes('Acme &lt;Fe
 for(const secret of [fmt(c0.cost),fmt(c0.profit),'profit','margin','contingency','labour'])assert.ok(!html.toLowerCase().includes(secret.toLowerCase()),'client quote leaks '+secret);
 assert.equal(mealsLabel([false,true,true]),'Lunch & dinner');
 st.client.vat=0;assert.equal(clientQuote(st,c0,t2,t3).total,clientQuote(st,c0,t2,t3).net);}
+{const {renderInternal}=await import('./dist/reports.mjs');const s2=structuredClone(DEFAULT),c2=calculate(s2);const html=renderInternal(s2,c2,{esc:x=>String(x),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n)),today:'2026-11-05'});assert.ok(html.includes('Tuck shop (separate from the quote)')&&html.includes('Stock to buy'));}
 console.log('reports tests passed');
 
 // Menu v2: options, per-stage menus, wages, migration
@@ -200,6 +201,85 @@ const OLD14=[[44,1],[46,1],[47,1],[9,0.01],[28,0.01],[42,0.015],[52,0.2]],v6=str
 const m6=migrate(v6);validate(m6);assert.equal(m6.version,7);assert.deepEqual(m6.recipes[14].lines,st.recipes[14].lines,'untouched old burger gets the new recipe');assert.ok(Math.abs(calculate(m6).price-c.price)<0.01);
 const v6e=structuredClone(v6);v6e.recipes[14].lines.push({ingredient:6,qty:0.02});const m6e=migrate(v6e);assert.equal(m6e.recipes[14].lines.length,OLD14.length+1,'an edited burger is kept as it is');
 console.log('crossover tests passed');
+// Tuck shop
+import('./dist/tuck.mjs').then(T=>{
+const st=structuredClone(DEFAULT),c=calculate(st),sm=T.tuckSummary(st,c);
+T.checkTuck(st.tuck);assert.equal(sm.personDays,c.pd,'selling to every crew person-day');assert.equal(sm.rows.length,8);
+const w=sm.rows[0],it=st.tuck.items[0];
+assert.ok(Math.abs(w.expected-it.rate*c.pd)<1e-9,'expected sales = per person per day x person-days');
+assert.equal(w.packs,Math.ceil(w.expected*1.1/it.packSize),'packs include the 10% buffer, rounded up');assert.ok(Math.abs(w.cost-w.packs*it.packPrice)<1e-9);assert.ok(w.stock>=w.expected,'stock covers expected sales');
+assert.ok(Math.abs(w.revenue-w.expected*it.sell/1.2)<1e-9,'till prices include 20% VAT');assert.ok(Math.abs(w.profit-(w.revenue-w.cost))<1e-9);assert.ok(Math.abs(sm.profit-(sm.revenue-sm.cost))<1e-6);
+assert.ok(Math.abs(sm.revenue-sm.rows.reduce((a,r)=>a+r.revenue,0))<1e-9&&Math.abs(sm.cost-sm.rows.reduce((a,r)=>a+r.cost,0))<1e-9);
+const ex=structuredClone(st);ex.tuck.settings.priceIncVat=false;assert.ok(Math.abs(T.tuckSummary(ex,calculate(ex)).revenue-sm.gross)<1e-9,'no VAT taken off when prices exclude it');
+const live=structuredClone(st);live.tuck.settings.stages=[false,true,false];const lv=T.tuckSummary(live,calculate(live));assert.equal(lv.personDays,c.groups.filter(g=>g.pi===1).reduce((a,g)=>a+g.pd,0),'only Live crew');assert.ok(lv.revenue<sm.revenue);
+const off=structuredClone(st);off.tuck.items[0].on=false;const so=T.tuckSummary(off,calculate(off));assert.equal(so.rows[0].packs,0);assert.equal(so.rows[0].cost,0);assert.ok(so.cost<sm.cost);
+const none=structuredClone(st);none.phases.forEach(p=>p.days=0);const sn=T.tuckSummary(none,calculate(none));assert.equal(sn.revenue,0);assert.equal(sn.cost,0,'no crew, nothing to buy');
+// suggested prices hit the target margin and round up to 5p
+for(const r of sm.rows){const net=r.suggested/1.2,margin=(net-r.effCost)/net*100;assert.ok(margin>=45-1e-6,r.name+' suggested price reaches the target margin');assert.ok(r.suggested<r.effCost/0.55*1.2+0.05+1e-9,'not more than 5p over');assert.ok(Math.abs(r.suggested*20-Math.round(r.suggested*20))<1e-9,'a multiple of 5p');}
+assert.equal(T.ceil5p(0.61),0.65);assert.equal(T.ceil5p(1.0),1);
+const us=structuredClone(st);const cc=calculate(us);assert.ok(T.useSuggestedPrice(us,cc,4));assert.equal(us.tuck.items[4].sell,sm.rows[4].suggested);assert.equal(T.useSuggestedPrice(us,cc,99),false);
+const after=T.tuckSummary(us,cc);assert.ok(after.rows[4].margin>=45-1e-6,'margin reaches the target after using the suggestion');
+const ad=structuredClone(st);T.addTuckItem(ad);T.addTuckItem(ad);assert.equal(ad.tuck.items.length,10);assert.equal(new Set(ad.tuck.items.map(i=>i.id)).size,10);validate(ad);
+// plans without a tuck shop or target get defaults; bad values are refused
+const old=structuredClone(st);delete old.tuck;delete old.target;validate(old);assert.equal(old.tuck.items.length,8);assert.deepEqual(old.target,{perMeal:0});
+for(const mut of [x=>{x.tuck.items[0].packSize=0},x=>{x.tuck.items[0].sell=-1},x=>{x.tuck.items[1].id=x.tuck.items[0].id},x=>{x.tuck.settings.stages=[true]},x=>{x.tuck.settings.vat=500},x=>{x.target.perMeal=-2},x=>{x.target.perMeal='7'}]){const b=structuredClone(st);mut(b);assert.throws(()=>validate(b));}
+const html=T.renderTuck(st,c,{esc:s=>String(s),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n)),num:(p,v)=>`<input data-path="${p}" value="${v}">`,text:(p,v)=>`<input data-path="${p}" value="${v}">`});assert.ok(html.includes('Bottled water')&&html.includes('Stock order list')&&html.includes('tuck-use-all')&&html.includes('separate from the client quote'));
+console.log('tuck shop tests passed');
+});
+// Extras costing and the price planner
+Promise.all([import('./dist/extras.mjs'),import('./dist/planner.mjs')]).then(([E,P])=>{
+const st=structuredClone(DEFAULT),c=calculate(st);
+// -- extras costing
+const bd=E.extrasBreakdown(st,c);assert.deepEqual(bd.map(x=>x.key),['drinks','fruit','cereal','salads']);
+for(const x of bd){
+ assert.ok(x.on,x.key+' is on by default');
+ const served=x.recipes.reduce((a,r)=>a+c.servings[r.index],0);assert.ok(Math.abs(x.totalServings-served)<1e-9,x.key+': servings match the model');assert.ok(Math.abs(x.stages.reduce((a,s)=>a+s.servings,0)-served)<1e-6,x.key+': stage servings add up');
+ for(const r of x.recipes){assert.ok(Math.abs(r.subtotal*(1+st.settings.waste/100)-r.perServing)<1e-9,r.name+': ingredients plus buffer is the recipe cost');assert.ok(Math.abs(r.lines.reduce((a,l)=>a+l.qty*l.price/(l.pack*l.yield),0)-r.subtotal)<1e-9);}
+ assert.ok(Math.abs(x.eventFood-x.recipes.reduce((a,r)=>a+r.servings*r.perServing,0))<1e-9);
+ const off=structuredClone(st);off.options[x.key]=false;const co=calculate(off);
+ assert.ok(Math.abs(x.dPrice-(c.price-co.price))<1e-6,x.key+': quote effect equals switching it off');assert.ok(Math.abs(x.dCost-(c.cost-co.cost))<1e-6);
+ assert.ok(Math.abs(x.dBase-(x.dPurchased+x.dConsumables+x.dEnergy))<1e-6,x.key+': the pieces add up to the cost change');
+ assert.ok(Math.abs(x.dCost-x.dBase*(1+st.settings.contingency/100))<1e-6,'contingency on top');assert.ok(Math.abs(x.dPrice-x.dCost/(1-st.settings.margin/100))<1e-6,'margin on top');
+ assert.ok(Math.abs(x.dPurchased-(x.eventFood+x.stockRounding))<1e-9,'shopping bill = food + pack rounding');
+}
+const dr=bd[0];assert.equal(dr.cupEach,st.settings.cups);assert.ok(Math.abs(dr.eventCups-dr.totalServings*st.settings.cups)<1e-9);assert.ok(Math.abs(dr.dConsumables-dr.eventCups)<1e-6,'cups are the consumables');assert.ok(dr.dEnergy>0,'the urn uses energy for drinks');
+assert.ok(Math.abs(bd[1].perServingAllIn-bd[1].avgPerServing)<1e-12,'fruit has no cup');
+const sal=bd[3];assert.equal(sal.recipes.length,3);assert.ok(Math.abs(sal.avgPerServing-sal.eventFood/sal.totalServings)<1e-9);assert.ok(Math.abs(sal.recipes.reduce((a,r)=>a+r.servings,0)-c.groups.reduce((a,g)=>a+g.mains,0)*2)<1e-6);
+// an extra that is off can still be costed
+const offState=structuredClone(st);offState.options.fruit=false;const cOff=calculate(offState),bo=E.extrasBreakdown(offState,cOff).find(x=>x.key==='fruit');assert.equal(bo.on,false);assert.ok(bo.totalServings>0&&bo.dPrice>0,'costed as if switched on');assert.ok(Math.abs(bo.dPrice-(c.price-cOff.price))<1e-6,'matches the dashboard card');
+// editing the numbers moves the costing
+const ed=structuredClone(st);ed.recipes[17].lines[0].qty*=2;const be=E.extrasBreakdown(ed,calculate(ed)).find(x=>x.key==='fruit');assert.ok(be.recipes[0].perServing>bd[1].recipes[0].perServing&&be.dPrice>bd[1].dPrice,'a bigger portion costs more');
+const half=structuredClone(st);half.settings.fruit=1;assert.ok(Math.abs(E.extrasBreakdown(half,calculate(half)).find(x=>x.key==='fruit').totalServings-bd[1].totalServings/2)<1e-9);
+const stg=structuredClone(st);stg.optionStages.fruit=[true,false,true];const bs=E.extrasBreakdown(stg,calculate(stg)).find(x=>x.key==='fruit');assert.equal(bs.stages[1].servings,0);assert.ok(bs.stages[1].ticked===false&&bs.stages[0].ticked);
+const hx=E.renderExtras(st,c,{esc:s=>String(s),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n)),num:(p,v)=>`<input data-path="${p}" value="${v}">`});assert.ok(hx.includes('1. How many')&&hx.includes('4. Into the quote')&&hx.includes('data-path="recipes.18.lines.0.qty"')&&hx.includes('data-path="ingredients.')&&hx.includes('data-path="settings.cups"')&&hx.includes('Added to the quote'));
+const hbad=structuredClone(st);hbad.recipes.slice(0,4).forEach(r=>r.weight=0);assert.ok(E.renderExtras(hbad,calculate(hbad),{esc:s=>String(s)}).includes('Fix the menu'));
+// -- price planner
+const pm0=P.perMeal(c);assert.ok(Math.abs(pm0-c.price/c.meals)<1e-12);
+const before=JSON.stringify(st),r7=P.planPrice(st,7);assert.equal(JSON.stringify(st),before,'planning never changes your plan');
+assert.equal(r7.status,'over');assert.ok(Math.abs(r7.gap-(pm0-7))<1e-9&&Math.abs(r7.gapEvent-r7.gap*c.meals)<1e-6);assert.ok(r7.scenarios.length>=2);
+for(const sc of r7.scenarios){const cs=calculate(sc.state);assert.equal(cs.errors.length,0);assert.ok(Math.abs(cs.price-sc.price)<1e-6&&Math.abs(P.perMeal(cs)-sc.perMeal)<1e-9&&Math.abs(cs.profit-sc.profit)<1e-6,sc.name+': numbers are the real result');
+ assert.equal(sc.met,sc.perMeal<=7.005);assert.ok(sc.steps.length>0&&sc.steps.every(s=>s.saving>0&&s.perMeal>0),'every step saves something');assert.ok(Math.abs(sc.steps.reduce((a,s)=>a+s.saving,0)-(c.price-sc.price))<1e-6,sc.name+': steps add up to the whole saving');
+ validate(structuredClone(sc.state));assert.ok(sc.state.recipes.every(r=>r.weight>=0),'no negative weights');assert.ok(sc.state.settings.margin>=10&&sc.state.settings.contingency>=2);}
+const ext=r7.scenarios.find(s=>s.key==='extras'),men=r7.scenarios.find(s=>s.key==='menu'),bal=r7.scenarios.find(s=>s.key==='balanced');
+assert.ok(ext&&ext.met,'trimming extras alone can reach 7.00');assert.deepEqual(ext.state.recipes.map(r=>[r.weight,r.phases]),st.recipes.map(r=>[r.weight,r.phases]),'extras plan leaves the menu alone');assert.equal(ext.state.settings.margin,st.settings.margin);assert.equal(ext.marginPct.toFixed(6),(st.settings.margin).toFixed(6));
+assert.deepEqual(men.state.options,st.options);assert.deepEqual(men.state.optionStages,st.optionStages);assert.equal(men.state.settings.fruit,st.settings.fruit,'menu plan leaves the extras alone');assert.ok(Math.abs(men.state.recipes.reduce((a,r)=>a+r.weight,0)-st.recipes.reduce((a,r)=>a+r.weight,0))<1e-9,'menu swaps move weight, they do not create it');assert.ok(men.state.recipes.some((r,i)=>r.weight!==st.recipes[i].weight));
+assert.ok(bal&&bal.pain<=ext.pain+1e-9,'balanced is no more painful than trimming extras alone');
+assert.ok(!r7.scenarios.some(s=>s.key==='last'),'last resort only appears when needed');
+// a stretch target
+const r5=P.planPrice(st,5.5);assert.equal(r5.status,'over');const last=r5.scenarios.find(s=>s.key==='last');assert.ok(last,'last resort appears for a hard target');assert.ok(last.steps.length<=30);validate(structuredClone(last.state));
+const r1=P.planPrice(st,0.5);assert.ok(r1.scenarios.every(s=>!s.met&&s.perMeal<pm0),'an impossible target gets best efforts, honestly marked');
+// room under the target
+const lean=structuredClone(st);P.KEYS.forEach(k=>{lean.options[k]=false});const cl=calculate(lean),pl=P.perMeal(cl),ru=P.planPrice(lean,pl+0.9);assert.equal(ru.status,'under');assert.ok(Math.abs(ru.room-0.9)<1e-9);assert.ok(ru.fill&&ru.fill.steps.length>0);assert.ok(ru.fill.perMeal<=pl+0.9+0.005&&ru.fill.perMeal>pl,'fills the room without going over');assert.ok(ru.fill.steps.every(s=>/^(Add|Raise) /.test(s.label)));validate(structuredClone(ru.fill.state));
+const exact=P.planPrice(st,pm0);assert.equal(exact.status,'under');assert.ok(exact.room<0.01);
+assert.equal(P.planPrice(st,0).status,'none');const bm=structuredClone(st);bm.recipes.slice(0,4).forEach(r=>r.weight=0);assert.equal(P.planPrice(bm,7).status,'error');
+const memo1=P.planPrice(st,7);assert.equal(P.planPrice(st,7),memo1,'the same question twice in a row is answered from memory');assert.notEqual(P.planPrice(lean,7),memo1,'a different plan is worked out again');
+// applying a plan, as the app does
+const applied=structuredClone(ext.state);validate(applied);assert.ok(P.perMeal(calculate(applied))<=7.005);assert.deepEqual(applied.target,st.target);
+const hh={esc:s=>String(s),fmt:n=>'£'+n.toFixed(2),whole:n=>String(Math.round(n)),num:(p,v)=>`<input data-path="${p}" value="${v}">`};
+const t7=structuredClone(st);t7.target.perMeal=7;const ph=P.renderPlanner(t7,calculate(t7),hh,{undo:true});assert.ok(ph.includes('over the target')&&ph.includes('Use this plan')&&ph.includes('planner-undo')&&ph.includes('data-path="target.perMeal"'));
+assert.ok(P.renderPlanner(st,c,hh).includes('Type the price per meal'));const tu=structuredClone(lean);tu.target.perMeal=pl+0.9;assert.ok(P.renderPlanner(tu,calculate(tu),hh).includes('under the target'));
+console.log('extras and planner tests passed');
+});
 });
 // Team earnings
 {const st=structuredClone(DEFAULT),c=calculate(st),t=c.team,role=n=>t.roles.find(r=>r.name===n);

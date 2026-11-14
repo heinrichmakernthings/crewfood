@@ -258,3 +258,25 @@ section.card .disclosure{margin-top:12px}
 .sg-main{display:flex;flex-direction:column;gap:2px;min-width:0}.sg-main b{font-size:15px}.sg-main span{font-size:13px;color:var(--muted)}.sg-main small{font-size:12px;color:var(--muted)}.sg-main small b{color:var(--ink);font-size:12px;font-variant-numeric:tabular-nums}.sg-main small i{font-style:normal;margin:0 3px;color:#b9c4bc}
 .inl-check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap}.inl-check input{width:16px;height:16px}
 .sg-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.sg-main em.xtag{font-style:normal;color:#fff;font-size:10.5px}
+
+/* Tuck shop */
+.tuck-kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:6px}.tuck-kpis .kpi strong{font-size:24px}
+.tuck-set{margin:0 0 14px;padding:14px 16px}.tuck-controls{display:flex;gap:18px 22px;flex-wrap:wrap;align-items:flex-end}
+.tc{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)}.tc input[type=number]{width:84px}.tc.check{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-size:13px}.tc.check input{width:18px;height:18px}
+.tuck-table td,.tuck-table th{padding:7px 8px}.tuck-table input.name{width:210px}.tuck-table input[type=number]{width:70px;padding:6px 7px}.tuck-table td.warn{color:#9b3724;font-weight:700}
+.order-list{margin:8px 0 0;padding-left:18px;font-size:14px;display:grid;gap:4px}
+@media(max-width:1280px){.tuck-kpis{grid-template-columns:1fr 1fr}}
+@media(max-width:899px){#nav button{font-size:9.5px;padding:7px 1px;gap:2px}#nav button svg{width:19px;height:19px}}
+
+/* Extras costing and price planner */
+.ex-card{margin:0 0 14px}.ex-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px}.ex-title{display:flex;align-items:center;gap:10px;font-size:18px;cursor:pointer}.ex-title input{width:20px;height:20px}
+.ex-card h4{margin:16px 0 6px;font-size:14px;color:var(--green)}.ex-line{margin:6px 0;font-size:14px;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ex-line input[type=number]{width:72px;padding:6px 8px}
+.ex-table td,.ex-table th{padding:8px 10px;font-size:13px}.ex-table small{display:block;font-size:11px;color:var(--muted)}.ex-table td input[type=number]{width:84px;padding:6px 8px}.ex-table td:has(input) {white-space:nowrap}
+.ex-chain{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:0}.ex-chain li{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}.ex-chain li small{grid-column:1/-1;font-size:12px;color:var(--muted)}.ex-chain li b{font-variant-numeric:tabular-nums}.ex-chain li.sum{font-weight:600;background:var(--light);padding:8px 10px;border-radius:8px;border:0;margin-top:4px}
+.pp-head{display:flex;gap:24px 40px;flex-wrap:wrap;align-items:flex-end;margin:0 0 14px}.pp-target span,.pp-now span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.pp-in{display:flex;align-items:baseline;gap:8px;font-size:22px}.pp-in input{width:110px;font-size:22px;padding:8px 10px}.pp-in small,.pp-now small{font-size:12px;color:var(--muted)}.pp-now b{font-size:26px;font-variant-numeric:tabular-nums;display:block}
+.pp-banner{padding:12px 16px;border-radius:12px;margin:0 0 14px;font-size:14px}.pp-banner.good{background:#e7efe6;color:#173d30}.pp-banner.low{background:#fff0e8;color:#7a2d1c}
+.pp-card{margin:0 0 14px}.pp-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.pp-top h3{margin:0}.pp-top .note{margin:3px 0 8px}
+.pp-steps{margin:6px 0 12px;padding-left:22px;display:grid;gap:6px;font-size:14px}.pp-steps li{padding-left:2px}.pp-steps li::marker{color:var(--muted);font-size:12px}.pp-steps li{display:list-item}.pp-steps li span{margin-right:10px}.pp-steps li b{float:right;font-variant-numeric:tabular-nums;font-size:13px}.pp-steps li b small{font-weight:400;color:var(--muted)}
+.pp-result{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0 14px;padding:12px 14px;background:var(--paper);border-radius:12px}.pp-result span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.pp-result b{font-size:18px;font-variant-numeric:tabular-nums}.pp-result small{display:block;font-size:12px;color:var(--muted)}
+.pp-undo{display:flex;align-items:center;gap:12px}
+@media(max-width:640px){.pp-result{grid-template-columns:1fr 1fr}.pp-steps li b{float:none;display:block}}

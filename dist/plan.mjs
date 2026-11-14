@@ -2,6 +2,7 @@
 import {DEFAULT} from './data.mjs';
 import {CLIENT_DEFAULT} from './reports.mjs';
 import {defaultRota, checkRota} from './rota.mjs';
+import {checkTuck} from './tuck.mjs';
 
 export function validate(s){
  if(!s||s.version!==7||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
@@ -35,6 +36,10 @@ export function validate(s){
  for(const [k,v]of Object.entries(s.settings))if(!finite(v))throw Error('Check cost settings.');if(s.settings.margin>=100)throw Error('Profit margin must be below 100%.');for(const o of s.overheads)if(!finite(o.cost))throw Error('Check overhead costs.');
  if(s.rota===undefined)s.rota=defaultRota(s);
  checkRota(s.rota);
+ if(s.target===undefined)s.target=structuredClone(DEFAULT.target);
+ if(!s.target||typeof s.target!=='object'||typeof s.target.perMeal!=='number'||!finite(s.target.perMeal,0,1000))throw Error('Check the client target price.');
+ if(s.tuck===undefined)s.tuck=structuredClone(DEFAULT.tuck);
+ checkTuck(s.tuck);
 }
 
 // Older plans (version 1 and 2) have a different menu. Keep the user's event, crew, prices and overheads; use the current menu.

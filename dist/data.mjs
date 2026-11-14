@@ -2001,5 +2001,95 @@ export const DEFAULT = {
       true,
       true
     ]
+  },
+  "target": {
+    "perMeal": 0
+  },
+  "tuck": {
+    "settings": {
+      "buffer": 10,
+      "vat": 20,
+      "priceIncVat": true,
+      "targetMargin": 45,
+      "stages": [
+        true,
+        true,
+        true
+      ]
+    },
+    "items": [
+      {
+        "id": "t1",
+        "name": "Bottled water 500ml",
+        "packSize": 24,
+        "packPrice": 5.4,
+        "sell": 1,
+        "rate": 0.5,
+        "on": true
+      },
+      {
+        "id": "t2",
+        "name": "Cola can 330ml",
+        "packSize": 24,
+        "packPrice": 9.6,
+        "sell": 1,
+        "rate": 0.35,
+        "on": true
+      },
+      {
+        "id": "t3",
+        "name": "Energy drink can",
+        "packSize": 24,
+        "packPrice": 15,
+        "sell": 1.5,
+        "rate": 0.2,
+        "on": true
+      },
+      {
+        "id": "t4",
+        "name": "Crisps",
+        "packSize": 48,
+        "packPrice": 16.8,
+        "sell": 0.8,
+        "rate": 0.4,
+        "on": true
+      },
+      {
+        "id": "t5",
+        "name": "Chocolate bar",
+        "packSize": 48,
+        "packPrice": 19.2,
+        "sell": 0.9,
+        "rate": 0.35,
+        "on": true
+      },
+      {
+        "id": "t6",
+        "name": "Flapjack or cereal bar",
+        "packSize": 24,
+        "packPrice": 10.5,
+        "sell": 1,
+        "rate": 0.2,
+        "on": true
+      },
+      {
+        "id": "t7",
+        "name": "Sweets bag",
+        "packSize": 30,
+        "packPrice": 10,
+        "sell": 1,
+        "rate": 0.15,
+        "on": true
+      },
+      {
+        "id": "t8",
+        "name": "Instant noodle pot",
+        "packSize": 12,
+        "packPrice": 8.4,
+        "sell": 1.5,
+        "rate": 0.1,
+        "on": true
+      }
+    ]
   }
 };

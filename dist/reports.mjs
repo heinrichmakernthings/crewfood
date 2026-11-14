@@ -2,6 +2,7 @@
 // Pure functions: numbers and HTML strings only. No DOM, no clock (the caller passes today's date).
 import {sum} from './model.mjs';
 import {BRAND_DEFAULT, tint} from './brand.mjs';
+import {tuckSummary} from './tuck.mjs';
 
 export const CLIENT_DEFAULT = {
   company: 'Crew Table',
@@ -142,6 +143,7 @@ ${c.errors.map(e => `<p class="warning">${esc(e)}</p>`).join('')}
 <section><h3>By stage</h3><table><thead><tr><th>Stage</th><th class="numeric">Days</th><th class="numeric">Person-days</th><th class="numeric">Labour</th><th class="numeric">Cost</th><th class="numeric">Price</th><th class="numeric">Profit</th></tr></thead><tbody>${c.phaseCosts.map(p => `<tr><td>${esc(p.name)}</td><td class="numeric">${whole(p.days)}</td><td class="numeric">${whole(p.pd)}</td><td class="numeric">${fmt(p.labour)}</td><td class="numeric">${fmt(p.cost)}</td><td class="numeric">${fmt(p.price)}</td><td class="numeric">${fmt(p.price - p.cost)}</td></tr>`).join('')}</tbody></table></section>
 <section><h3>Biggest shopping lines</h3><table><thead><tr><th>Ingredient</th><th class="numeric">Packs</th><th class="numeric">Spend</th></tr></thead><tbody>${top.map(i => `<tr><td>${esc(i.name)}</td><td class="numeric">${whole(i.packs)}</td><td class="numeric">${fmt(i.spend)}</td></tr>`).join('')}</tbody></table></section>
 <section><h3>Equipment & energy</h3><table><thead><tr><th>Equipment</th><th>Fuel</th><th class="numeric">To bring</th><th class="numeric">kWh</th><th class="numeric">Cost</th></tr></thead><tbody>${c.energy.filter(e => e.units > 0).map(e => `<tr><td>${esc(e.name)}</td><td>${e.fuel === 'gas' ? 'Gas' : 'Electric'}</td><td class="numeric">${e.units}</td><td class="numeric">${whole(e.kwh)}</td><td class="numeric">${fmt(e.cost)}</td></tr>`).join('')}<tr class="rp-strong"><td>Total estimate</td><td></td><td></td><td class="numeric">${whole(c.energyTotals.kwh)}</td><td class="numeric">${fmt(c.energyTotals.cost)}</td></tr></tbody></table><p class="rp-small">${c.kit.energy ? `Gas & electric is added to the cost. Daily cleaning and other costs are ${fmt(c.daily)}.` : `Gas & electric is not charged. The daily allowance is ${fmt(c.daily)}.`}</p></section>
+${state.tuck ? (() => { const tk = tuckSummary(state, c); return `<section><h3>Tuck shop (separate from the quote)</h3><table><tbody><tr><td>Sales before VAT</td><td class="numeric">${fmt(tk.revenue)}</td></tr><tr><td>Stock to buy</td><td class="numeric">${fmt(tk.cost)}</td></tr><tr class="rp-strong"><td>Profit</td><td class="numeric">${fmt(tk.profit)}</td></tr></tbody></table></section>`; })() : ''}
 <section class="rp-terms"><p class="rp-small">Food costs use Booker public prices checked 4 November 2026 with ${t.waste}% food buffer. Staffing, portions and yields are estimates. Whole-pack top-up of ${fmt(c.uplift)} is included. Margin is profit ÷ selling price.</p></section>
 </article>`;
 }
