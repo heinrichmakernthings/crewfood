@@ -1,7 +1,7 @@
 // Donut charts for the dashboard. Pure: returns an SVG + legend as an HTML string.
 import {sum} from './model.mjs';
 
-export const PALETTE = ['#245946', '#d98b2b', '#b4472a', '#3f6f8f', '#8aa68f', '#6b5b7b'];
+export const PALETTE = ['#1f5c47', '#e0a03a', '#c4553a', '#4a7a9b', '#93b5a0', '#7a6a8f'];
 
 export function donut(items, h, {centerTop = '', centerBottom = ''} = {}) {
   const {esc, fmt} = h;
