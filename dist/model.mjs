@@ -1,4 +1,8 @@
+import {BUDGET} from './data.mjs';
 export const sum=a=>a.reduce((s,v)=>s+v,0);
+const BUDGET_IDS=new Set([...BUDGET.breakfast,...BUDGET.lunch,...BUDGET.dinner,...BUDGET.salad]);
+// Is this recipe on the menu in stage pi? A stage on the budget veggie menu serves only the budget recipes, whatever the normal menu ticks say.
+export function served(s,r,pi){return s.budget&&s.budget[pi]?BUDGET_IDS.has(r.id)&&['Breakfast','Main','Salad'].includes(r.type):r.weight>0&&(!r.phases||r.phases[pi]!==false);}
 export function calculate(s,mode='mixed'){
  const t=s.settings, kit={energy:true,fee:false,feeAmount:0,feeBasis:'day',...(s.kit||{})}, opt={fruit:true,drinks:true,cereal:true,salads:true,...(s.options||{})}, stg={...(s.optionStages||{})}, onIn=(r,pi)=>!r.phases||r.phases[pi]!==false, waste=1+t.waste/100, ing=new Map(s.ingredients.map(i=>[i.id,i]));
  const unit=i=>i.price/(i.pack*i.yield);
@@ -7,17 +11,19 @@ export function calculate(s,mode='mixed'){
  const errors=[];
  let groups=[],phaseCosts=[],servings=s.recipes.map(()=>0),phaseServ=s.phases.map(()=>s.recipes.map(()=>0)),pd=0,meals=0,food=0,labour=0,consumables=0;
  for(let pi=0;pi<s.phases.length;pi++){
-  const on=k=>!!opt[k]&&(!stg[k]||stg[k][pi]!==false), p=s.phases[pi], bw=sum(breakfast.filter(r=>onIn(r,pi)).map(r=>r.weight)),mw=sum(mains.filter(r=>onIn(r,pi)).map(r=>r.weight)),sw=sum(saladRecipes.filter(r=>onIn(r,pi)).map(r=>r.weight)), phasePD=sum(p.groups.map(g=>g.people*p.days));
+  const bud=!!(s.budget&&s.budget[pi]),on=k=>!!opt[k]&&(!stg[k]||stg[k][pi]!==false), p=s.phases[pi], bw=sum(breakfast.filter(r=>onIn(r,pi)).map(r=>r.weight)),mw=sum(mains.filter(r=>onIn(r,pi)).map(r=>r.weight)),sw=sum(saladRecipes.filter(r=>onIn(r,pi)).map(r=>r.weight)), phasePD=sum(p.groups.map(g=>g.people*p.days));
   const staff=sum(p.staff.map(r=>r.people*r.hours*r.rate))*p.days*(1+t.oncost/100);
   labour+=staff;
   for(let gi=0;gi<p.groups.length;gi++){
    const g=p.groups[gi], flags=mode==='two'?[false,true,true]:mode==='three'?[true,true,true]:g.meals;
    const days=g.people*p.days, b=flags[0]?days:0, m=(+flags[1]+ +flags[2])*days;
    const share=(r,total,n)=>total&&onIn(r,pi)?n*r.weight/total:0;
-   let portions=s.recipes.map(r=>r.type==='Breakfast'?share(r,bw,b):r.type==='Main'?share(r,mw,m):r.type==='Salad'?(on('salads')?share(r,sw,m*t.salads):0):r.key==='fruit'?(g.extras&&on('fruit')?days*t.fruit:0):r.key==='drinks'?(g.extras&&on('drinks')?days*t.drinks:0):r.key==='cereal'?(on('cereal')?b*t.cereal:0):0);
-   if(b>0&&!bw&&!errors.some(e=>e.startsWith('Breakfast covers in '+p.name)))errors.push('Breakfast covers in '+p.name+' have no menu. Tick a breakfast for '+p.name+' and give it a positive weight.');
-   if(m>0&&!mw&&!errors.some(e=>e.startsWith('Lunch / dinner covers in '+p.name)))errors.push('Lunch / dinner covers in '+p.name+' have no menu. Tick a main for '+p.name+' and give it a positive weight.');
-   if(on('salads')&&m>0&&t.salads>0&&!sw&&!errors.some(e=>e.startsWith('Salads in '+p.name)))errors.push('Salads in '+p.name+' have no menu. Tick a salad for '+p.name+' and give it a positive weight, or turn salads off.');
+   const rot=ids=>ids.length?1/ids.length:0, lunchN=flags[1]?days:0, dinnerN=flags[2]?days:0;
+   const budgetShare=r=>BUDGET.breakfast.includes(r.id)?b*rot(BUDGET.breakfast):BUDGET.lunch.includes(r.id)?lunchN*rot(BUDGET.lunch):BUDGET.dinner.includes(r.id)?dinnerN*rot(BUDGET.dinner):BUDGET.salad.includes(r.id)?(on('salads')?m*rot(BUDGET.salad):0):0;
+   let portions=s.recipes.map(r=>bud&&['Breakfast','Main','Salad'].includes(r.type)?budgetShare(r):r.type==='Breakfast'?share(r,bw,b):r.type==='Main'?share(r,mw,m):r.type==='Salad'?(on('salads')?share(r,sw,m*t.salads):0):r.key==='fruit'?(g.extras&&on('fruit')?days*t.fruit:0):r.key==='drinks'?(g.extras&&on('drinks')?days*t.drinks:0):r.key==='cereal'?(on('cereal')?b*t.cereal:0):0);
+   if(!bud&&b>0&&!bw&&!errors.some(e=>e.startsWith('Breakfast covers in '+p.name)))errors.push('Breakfast covers in '+p.name+' have no menu. Tick a breakfast for '+p.name+' and give it a positive weight.');
+   if(!bud&&m>0&&!mw&&!errors.some(e=>e.startsWith('Lunch / dinner covers in '+p.name)))errors.push('Lunch / dinner covers in '+p.name+' have no menu. Tick a main for '+p.name+' and give it a positive weight.');
+   if(!bud&&on('salads')&&m>0&&t.salads>0&&!sw&&!errors.some(e=>e.startsWith('Salads in '+p.name)))errors.push('Salads in '+p.name+' have no menu. Tick a salad for '+p.name+' and give it a positive weight, or turn salads off.');
    portions.forEach((v,i)=>{servings[i]+=v;phaseServ[pi][i]+=v;});
    const f=sum(portions.map((v,i)=>v*recipeCosts[i]));
    const c=(b+m)*t.disposables+(g.extras&&on('drinks')?days*t.drinks*t.cups:0);

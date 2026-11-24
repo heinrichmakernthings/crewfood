@@ -1,5 +1,5 @@
 export const DEFAULT = {
-  "version": 7,
+  "version": 8,
   "name": "Festival crew catering",
   "ingredients": [
     {
@@ -1719,6 +1719,200 @@ export const DEFAULT = {
         }
       ],
       "equipment": []
+    },
+    {
+      "id": 22,
+      "type": "Breakfast",
+      "key": "bacon-egg-bap",
+      "name": "Bacon and egg bap",
+      "note": "Budget menu only: 1 bacon rasher and 1 egg",
+      "weight": 0,
+      "phases": [
+        false,
+        false,
+        false
+      ],
+      "lines": [
+        {
+          "ingredient": 41,
+          "qty": 1
+        },
+        {
+          "ingredient": 37,
+          "qty": 0.03
+        },
+        {
+          "ingredient": 24,
+          "qty": 1
+        },
+        {
+          "ingredient": 42,
+          "qty": 0.015
+        },
+        {
+          "ingredient": 26,
+          "qty": 0.01
+        }
+      ],
+      "equipment": [
+        "grill"
+      ]
+    },
+    {
+      "id": 23,
+      "type": "Breakfast",
+      "key": "veggie-sausage-egg-bap",
+      "name": "Veggie sausage and egg bap",
+      "note": "Budget menu only: 1 veggie sausage and 1 egg",
+      "weight": 0,
+      "phases": [
+        false,
+        false,
+        false
+      ],
+      "lines": [
+        {
+          "ingredient": 41,
+          "qty": 1
+        },
+        {
+          "ingredient": 39,
+          "qty": 0.05
+        },
+        {
+          "ingredient": 24,
+          "qty": 1
+        },
+        {
+          "ingredient": 42,
+          "qty": 0.015
+        },
+        {
+          "ingredient": 26,
+          "qty": 0.01
+        }
+      ],
+      "equipment": [
+        "grill"
+      ]
+    },
+    {
+      "id": 24,
+      "type": "Main",
+      "key": "veggie-curry-dhal",
+      "name": "Veggie curry, dhal and rice",
+      "note": "Budget menu only: chickpea and veg curry with red lentil dhal",
+      "weight": 0,
+      "phases": [
+        false,
+        false,
+        false
+      ],
+      "lines": [
+        {
+          "ingredient": 4,
+          "qty": 0.08
+        },
+        {
+          "ingredient": 2,
+          "qty": 0.05
+        },
+        {
+          "ingredient": 13,
+          "qty": 0.12
+        },
+        {
+          "ingredient": 17,
+          "qty": 0.05
+        },
+        {
+          "ingredient": 5,
+          "qty": 0.08
+        },
+        {
+          "ingredient": 6,
+          "qty": 0.05
+        },
+        {
+          "ingredient": 15,
+          "qty": 0.06
+        },
+        {
+          "ingredient": 8,
+          "qty": 0.005
+        },
+        {
+          "ingredient": 9,
+          "qty": 0.01
+        },
+        {
+          "ingredient": 35,
+          "qty": 0.006
+        },
+        {
+          "ingredient": 34,
+          "qty": 0.001
+        }
+      ],
+      "equipment": [
+        "hob"
+      ]
+    },
+    {
+      "id": 25,
+      "type": "Main",
+      "key": "bean-pulse-salad",
+      "name": "Cold bean and pulse salad",
+      "note": "Budget menu lunch: kidney beans, chickpeas, peppers, carrot and onion in a vinaigrette",
+      "weight": 0,
+      "phases": [
+        false,
+        false,
+        false
+      ],
+      "lines": [
+        {
+          "ingredient": 3,
+          "qty": 0.06
+        },
+        {
+          "ingredient": 4,
+          "qty": 0.06
+        },
+        {
+          "ingredient": 16,
+          "qty": 0.03
+        },
+        {
+          "ingredient": 7,
+          "qty": 0.03
+        },
+        {
+          "ingredient": 6,
+          "qty": 0.01
+        },
+        {
+          "ingredient": 28,
+          "qty": 0.03
+        },
+        {
+          "ingredient": 9,
+          "qty": 0.008
+        },
+        {
+          "ingredient": 30,
+          "qty": 0.005
+        },
+        {
+          "ingredient": 10,
+          "qty": 0.001
+        },
+        {
+          "ingredient": 34,
+          "qty": 0.0005
+        }
+      ],
+      "equipment": []
     }
   ],
   "phases": [
@@ -2091,5 +2285,13 @@ export const DEFAULT = {
         "on": true
       }
     ]
-  }
+  },
+  "budget": [
+    false,
+    false,
+    false
+  ]
 };
+
+// Budget veggie menu: three veggie dinners on rotation, a cold bean salad lunch and coleslaw. Ids are recipe ids.
+export const BUDGET = {breakfast: [22, 23], lunch: [25], dinner: [5, 7, 24], salad: [21]};

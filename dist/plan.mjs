@@ -5,7 +5,7 @@ import {defaultRota, checkRota} from './rota.mjs';
 import {checkTuck} from './tuck.mjs';
 
 export function validate(s){
- if(!s||s.version!==7||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
+ if(!s||s.version!==8||!Array.isArray(s.phases)||s.phases.length!==3||!Array.isArray(s.ingredients)||!Array.isArray(s.recipes)||s.recipes.length!==DEFAULT.recipes.length||!Array.isArray(s.overheads)||!s.settings)throw Error('This is not a Crew Table plan.');
  const finite=(n,min=0,max=1e7)=>typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max;
  const short=v=>typeof v==='string'&&v.length<=500;
  if(!short(s.name)||s.ingredients.length<1||s.ingredients.length>300||s.overheads.length>100)throw Error('Check the event name and plan size.');
@@ -38,6 +38,8 @@ export function validate(s){
  checkRota(s.rota);
  if(s.target===undefined)s.target=structuredClone(DEFAULT.target);
  if(!s.target||typeof s.target!=='object'||typeof s.target.perMeal!=='number'||!finite(s.target.perMeal,0,1000))throw Error('Check the client target price.');
+ if(s.budget===undefined)s.budget=[false,false,false];
+ if(!Array.isArray(s.budget)||s.budget.length!==3||s.budget.some(x=>typeof x!=='boolean'))throw Error('Check the budget menu stages.');
  if(s.tuck===undefined)s.tuck=structuredClone(DEFAULT.tuck);
  checkTuck(s.tuck);
 }
@@ -45,10 +47,11 @@ export function validate(s){
 // Older plans (version 1 and 2) have a different menu. Keep the user's event, crew, prices and overheads; use the current menu.
 export function migrate(s) {
   if (!s || typeof s !== 'object') return s;
-  if (s.version === 3) return migrate6(migrate4(migrate3(s)));
-  if (s.version === 4) return migrate6(migrate4(s));
-  if (s.version === 5) return migrate6(migrate5(s));
-  if (s.version === 6) return migrate6(s);
+  if (s.version === 3) return migrate7(migrate6(migrate4(migrate3(s))));
+  if (s.version === 4) return migrate7(migrate6(migrate4(s)));
+  if (s.version === 5) return migrate7(migrate6(migrate5(s)));
+  if (s.version === 6) return migrate7(migrate6(s));
+  if (s.version === 7) return migrate7(s);
   if (s.version !== 1 && s.version !== 2) return s;
   const v1 = s.version === 1, keep = v1 ? 36 : 51;
   const n = structuredClone(DEFAULT);
@@ -152,5 +155,15 @@ function migrate6(s) {
       }
     }
   }
+  return n;
+}
+
+// Version 8 adds the budget veggie menu: four recipes (bacon and egg bap, veggie sausage and egg bap, veggie curry with dhal,
+// cold bean salad) and a per-stage switch. The new recipes are off in the normal menu, so existing quotes do not change.
+function migrate7(s) {
+  const n = structuredClone(s);
+  n.version = 8;
+  if (Array.isArray(n.recipes) && n.recipes.length === 22) [22, 23, 24, 25].forEach(i => n.recipes.push(structuredClone(DEFAULT.recipes[i])));
+  if (!Array.isArray(n.budget)) n.budget = [false, false, false];
   return n;
 }
