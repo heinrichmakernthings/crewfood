@@ -1,6 +1,6 @@
 // Client quote and internal costing reports.
 // Pure functions: numbers and HTML strings only. No DOM, no clock (the caller passes today's date).
-import {sum} from './model.mjs';
+import {sum, served} from './model.mjs';
 import {BRAND_DEFAULT, tint} from './brand.mjs';
 import {tuckSummary} from './tuck.mjs';
 
@@ -73,8 +73,8 @@ export function clientQuote(state, c, two, three) {
   const t = state.settings;
   const live = state.phases.map(p => p.days > 0 && sum(p.groups.map(g => g.people)) > 0);
   const liveNames = state.phases.filter((_, i) => live[i]).map(p => p.name);
-  const names = type => state.recipes.filter(r => r.type === type && r.weight > 0).flatMap(r => {
-    const where = state.phases.filter((p, i) => live[i] && (!r.phases || r.phases[i] !== false)).map(p => p.name);
+  const names = type => state.recipes.filter(r => r.type === type).flatMap(r => {
+    const where = state.phases.filter((p, i) => live[i] && served(state, r, i)).map(p => p.name);
     if (!where.length) return [];
     return [where.length === liveNames.length ? r.name : `${r.name} (${where.join(' & ')} only)`];
   });
@@ -86,8 +86,9 @@ export function clientQuote(state, c, two, three) {
     if (!names.length) return null;
     return names.length === liveNames.length ? '' : ` (${names.join(' & ')} only)`;
   };
-  const words = {1: 'One', 2: 'Two', 3: 'Three'}, saladNames = state.recipes.filter(r => r.type === 'Salad' && r.weight > 0).map(r => r.name.toLowerCase());
-  [['salads', `${words[t.salads] || t.salads} ${t.salads === 1 ? 'salad' : 'salads'} with every lunch and dinner${saladNames.length ? ' (' + saladNames.join(', ') + ')' : ''}`], ['cereal', 'Cereal station at breakfast'], ['fruit', 'Fresh fruit'], ['drinks', 'Tea, coffee, milk and sugar']].forEach(([k, text]) => {
+  const words = {1: 'One', 2: 'Two', 3: 'Three'}, saladNames = state.recipes.filter(r => r.type === 'Salad' && state.phases.some((p, i) => live[i] && served(state, r, i))).map(r => r.name.toLowerCase());
+  const allBudget = liveNames.length > 0 && state.phases.every((p, i) => !live[i] || (state.budget && state.budget[i]));
+  [['salads', `${allBudget ? 'Coleslaw' : (words[t.salads] || t.salads) + (t.salads === 1 ? ' salad' : ' salads')} with every lunch and dinner${saladNames.length && !allBudget ? ' (' + saladNames.join(', ') + ')' : ''}`], ['cereal', 'Cereal station at breakfast'], ['fruit', 'Fresh fruit'], ['drinks', 'Tea, coffee, milk and sugar']].forEach(([k, text]) => {
     const w = where(k);
     if (w !== null) everyDay.push(text + w);
   });
